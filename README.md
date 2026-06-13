@@ -1,109 +1,247 @@
 # prototype-with-claude
 
-Build AI features in hours, not weeks. Use Claude Code as your agent runtime to prototype, then ship with the Agent SDK.
+Prototype AI features in Claude Code before writing production code.  
+Then graduate the working behavior to the Agent SDK.
 
-## The two-phase approach
+**The pattern:** Write a plain-text job description (a **Skill**) → Claude Code runs it as an agent → measure quality with built-in evals → auto-improve until it passes → generate production Python with one command.
+
+No boilerplate. No wasted API calls on logic that doesn't work yet. Validate the behavior first, write the code second.
+
+---
+
+## See it work
+
+The built-in lead qualifier runs immediately after cloning. Here's what the loop looks like:
+
+**Step 1 — Run the skill in Claude Code:**
+```
+/qualify-lead Retool
+```
+
+Claude searches the web, reads LinkedIn job postings and Crunchbase, scores the company against your ICP, and writes a qualification report:
+
+```markdown
+# Lead Qualification: Retool
+Qualified: 2025-06-12 | Tier: HOT
+
+## Decision
+HOT — Developer tools platform, Series C ($145M), ~450 employees,
+12 open AE roles signal active GTM scaling.
+
+## ICP Scorecard
+| Criterion       | Score | Evidence                             |
+|-----------------|-------|--------------------------------------|
+| Company size    | ✅    | ~450 employees (LinkedIn, Jan 2025)  |
+| Industry fit    | ✅    | Internal tools platform, B2B SaaS    |
+| Geography       | ✅    | SF HQ, US-primary customer base      |
+| Stage / funding | ✅    | Series C, $145M (Sequoia, YC)        |
+| Pain signal     | ✅    | 12 open AE roles, 3 SDR roles        |
+
+## Recommended next step
+Book discovery with VP Sales. Reference the SDR build-out —
+they're building outbound motion and likely evaluating sales tools.
+```
+
+**Step 2 — Measure quality with evals:**
+```
+/eval-skill qualify-lead
+→ 77% (17/22 criteria) — report in output/evals/qualify-lead-report.md
+```
+
+**Step 3 — Auto-improve:**
+```
+/improve-skill qualify-lead
+→ Edited SKILL.md: added explicit fallback for missing headcount data
+→ Re-run /eval-skill to measure improvement
+```
+
+**Step 4 — Export to production Python:**
+```
+/export-to-sdk
+→ Generated sdk/qualify-lead/agent.py — runs the same job without a human in the loop
+```
+
+**That's the full loop.** See [`WALKTHROUGH.md`](WALKTHROUGH.md) for a complete 20-minute build-along with sample inputs, real outputs, and eval results.
+
+---
+
+## Why this order matters
+
+Most founders jump straight to SDK code before they know what the agent should actually do. That's expensive to iterate on — every change requires redeployment. Skills fix that:
+
+- **Write in minutes, not hours.** A SKILL.md file takes 10 minutes to write and 30 seconds to test.
+- **Discover failure modes before they cost you.** The eval loop catches edge cases while you're still in markdown.
+- **The prompt stays editable.** Business logic lives in `SKILL.md`, not buried in Python strings.
+- **Migration is trivial.** Once the behavior is validated, `/export-to-sdk` generates the production wrapper.
+- **Your team can read it.** A PM can review a SKILL.md. They can't review an agent loop.
+
+---
+
+## Why Claude
+
+**Long-context reasoning.** Claude reads a full company website, 10 search results, and a LinkedIn page in one pass and synthesizes coherently. Smaller context windows force chunking that breaks coherence.
+
+**Reliable tool use.** Claude chains multiple tool calls — search, fetch, read, write — without hallucinating results or losing track of the task. Tool reliability matters when your agent needs 8 steps to complete a job.
+
+**The Skills system.** Skills give Claude persistent, on-demand domain knowledge. Your ICP criteria load when qualifying a lead. Your brand voice loads when generating content. Nothing bloats the context that isn't needed.
+
+**Iterative workflow design.** Claude Code is built for the edit-run-fix loop. You edit a SKILL.md, run it, see the output, edit again. The `/improve-skill` command makes this loop automatic.
+
+**Agent SDK as a clean graduation path.** The SDK uses the same model, same tools, and same context management as Claude Code. When you move from prototype to production, the agent behavior doesn't change — only the runtime does.
+
+---
+
+## Repo map
 
 ```
-PHASE 1: PROTOTYPE                    PHASE 2: SHIP
-─────────────────────                 ──────────────────────────
-Write a Skill (markdown)     ──→      Generate Agent SDK code
-Claude Code runs the agent            Your app runs the agent
-Iterate in minutes                    Scales in production
-No code required                      Python or TypeScript
+prototype-with-claude/
+│
+├── WALKTHROUGH.md              ← Start here: 20-min lead qualifier build-along
+│
+├── .claude/
+│   ├── skills/                 ← Skills that work immediately after cloning
+│   │   ├── qualify-lead/       → /qualify-lead <company>
+│   │   ├── research-agent/     → /research-agent <topic>
+│   │   ├── generate-content/   → /generate-content "<brief>"
+│   │   └── starter-agent/      → template to copy and modify
+│   └── commands/               ← Meta-commands
+│       ├── new-skill.md        → /new-skill (guided wizard)
+│       ├── eval-skill.md       → /eval-skill <name> (grades outputs)
+│       ├── improve-skill.md    → /improve-skill <name> (edits SKILL.md)
+│       └── export-to-sdk.md    → /export-to-sdk (generates Python)
+│
+├── examples/
+│   ├── 01-research-agent/      ← Research & Synthesize pattern
+│   ├── 02-lead-qualifier/      ← Score & Classify pattern
+│   ├── 03-content-generator/   ← Generate & Iterate pattern
+│   └── 04-evals-and-improvement/ ← Eval loop + automated improvement
+│       └── sdk/
+│           ├── eval_runner.py  → Programmatic eval runner
+│           └── improve.py      → Automated improvement loop
+│
+├── docs/
+│   ├── founder-use-cases.md    ← 5 real startup use cases with build guides
+│   ├── demo-script.md          ← 5-min reviewer walkthrough script
+│   ├── skill-patterns.md       ← Design patterns for the 3 skill shapes
+│   └── sdk-migration-guide.md  ← How to graduate to production
+│
+└── CLAUDE.md                   ← Claude's instructions when working in this repo
 ```
 
-**Phase 1** — You write a Skill: a plain-text job description for your AI. Claude Code has built-in tools (web search, file read/write, bash, browser). You run the Skill interactively to validate the workflow. Iterate on the markdown until Claude reliably does the job.
+---
 
-**Phase 2** — Once the job works, you generate production code using the Agent SDK. Same tools, same Claude, now automatable and scalable.
-
-## Why this works
-
-The hardest part of building AI products isn't the code — it's figuring out *what the AI should actually do*. Skills let you answer that question without writing any code. You prototype the logic, discover the edge cases, and tune the instructions. The Agent SDK migration is then straightforward because you already know what works.
-
-## Quick start
+## Start here
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/your-org/prototype-with-claude
+# 1. Clone
+git clone https://github.com/sinned/prototype-with-claude
 cd prototype-with-claude
 
 # 2. Open Claude Code
 claude
 
-# 3. Try a built-in example
-/research-agent Stripe             # Research a company
-/qualify-lead Notion               # Qualify a lead against your ICP
-/generate-content "launch email"   # Generate content variations
+# 3. Run a skill immediately (no setup needed)
+/qualify-lead Retool
+/research-agent "Stripe competitors"
+/generate-content "cold email for a sales tool, target: VP Sales at Series B"
 
-# 4. Create your own skill
+# 4. Build your own skill (guided wizard)
 /new-skill
 
-# 5. Test and improve it systematically
-/eval-skill my-skill               # Run test cases, grade outputs with Claude-as-judge
-/improve-skill my-skill            # Auto-improve SKILL.md based on failures
+# 5. Measure quality
+/eval-skill your-skill-name
 
-# 6. When it works reliably, export to production code
+# 6. Fix failures automatically
+/improve-skill your-skill-name
+
+# 7. Graduate to production
 /export-to-sdk
 ```
 
-## What's included
+For Phase 2 (running agents in production):
+```bash
+export ANTHROPIC_API_KEY=your-key   # from platform.claude.com
+pip install claude-agent-sdk
+python examples/02-lead-qualifier/sdk/agent.py "Retool"
+python examples/02-lead-qualifier/sdk/agent.py --batch leads.csv
+```
 
-| Path | What it is |
-|------|-----------|
-| `.claude/skills/starter-agent/` | Commented skill template — copy and modify |
-| `.claude/commands/new-skill.md` | `/new-skill` — guided wizard to create a skill |
-| `.claude/commands/eval-skill.md` | `/eval-skill` — run test cases + grade with Claude-as-judge |
-| `.claude/commands/improve-skill.md` | `/improve-skill` — edit SKILL.md based on failures |
-| `.claude/commands/export-to-sdk.md` | `/export-to-sdk` — generate Agent SDK code from a skill |
-| `examples/01-research-agent/` | Research + synthesize pattern |
-| `examples/02-lead-qualifier/` | Score + classify pattern |
-| `examples/03-content-generator/` | Generate + iterate pattern |
-| `examples/04-evals-and-improvement/` | Eval loop + automated improvement |
-| `docs/skill-patterns.md` | Patterns for common agent shapes |
-| `docs/sdk-migration-guide.md` | How Skills map to Agent SDK concepts |
+---
 
 ## The three skill patterns
 
-Most startup AI features fit one of these shapes:
+Most startup AI features fit one of these shapes. Each has a full example in `examples/`:
+
+| Pattern | Shape | Built-in skill | Use for |
+|---------|-------|---------------|---------|
+| **Research & Synthesize** | search → gather → synthesize → report | `/research-agent` | Prospect research, competitive analysis, market briefs |
+| **Score & Classify** | load rubric → analyze → score → decision | `/qualify-lead` | Lead scoring, ticket routing, content moderation |
+| **Generate & Iterate** | brief → research → 3 variations → recommendation | `/generate-content` | Copy variations, outreach, content at scale |
+
+---
+
+## The eval loop
+
+The difference between "it looks okay on 3 examples" and "it works reliably":
 
 ```
-RESEARCH & SYNTHESIZE          SCORE & CLASSIFY           GENERATE & ITERATE
-─────────────────────          ────────────────           ──────────────────
-Input: a topic or name         Input: structured data     Input: a brief
-Search → Gather → Synthesize   Load → Analyze → Score     Research → Plan → Draft
-Output: a report/brief         Output: score + reasoning  Output: variations
+Define test cases  →  Run skill on each  →  Claude grades outputs  →  Find failure patterns  →  Improve SKILL.md  →  Repeat
 ```
 
-See `examples/` for fully worked examples of each pattern, each with the Skill and the matching Agent SDK code.
-
-## The mental model
+Test cases live in `.claude/skills/<skill-name>/evals/test-cases.md`. Each case is an input and a list of binary (yes/no) quality criteria. Claude grades outputs against them — no subjective "does this look good?", just pass/fail on each criterion.
 
 ```
-Skill            =   A job description for your AI
-Agent SDK query  =   That job, running autonomously in production
-ClaudeAgentOptions  =  Permissions + tools + configuration
+/eval-skill qualify-lead     # runs tests, grades outputs, writes report
+/improve-skill qualify-lead  # reads report, edits SKILL.md to fix failures
 ```
 
-A Skill is just markdown. Claude Code reads it when you invoke the command and uses it as instructions. The same content becomes your system prompt / task description in the SDK.
+See [`examples/04-evals-and-improvement/`](examples/04-evals-and-improvement/) for the full example including an automated improvement loop that runs in the Agent SDK until a target score is hit.
 
-## Building your own skill
+---
 
-1. Copy `.claude/skills/starter-agent/SKILL.md` to `.claude/skills/<your-skill-name>/SKILL.md`
-2. Edit it: describe the job, the steps, the output format
-3. Run `/your-skill-name <input>` in Claude Code to test
-4. Iterate on the markdown until it works reliably
-5. Run `/export-to-sdk` to generate production Python/TypeScript
+## Graduate to production
+
+Once the skill passes evals, one command generates production Python:
+
+```
+/export-to-sdk
+```
+
+The generated `agent.py` uses the same instructions as your `SKILL.md` — same prompt, same tools, now running autonomously via the Agent SDK:
+
+```python
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+async def qualify(company: str) -> str:
+    async for message in query(
+        prompt=PROMPT.format(company=company),  # same instructions as SKILL.md
+        options=ClaudeAgentOptions(
+            allowed_tools=["WebSearch", "WebFetch", "Write"],
+            permission_mode="acceptEdits",
+        ),
+    ):
+        if hasattr(message, "result"):
+            return message.result
+```
+
+From there: call it from a FastAPI endpoint, run it on a CSV, trigger it from a cron job. See [`docs/sdk-migration-guide.md`](docs/sdk-migration-guide.md) for patterns.
+
+---
+
+## Go deeper
+
+| Resource | What's in it |
+|----------|-------------|
+| [`WALKTHROUGH.md`](WALKTHROUGH.md) | Complete 20-min lead qualifier build, with real outputs and eval results |
+| [`docs/founder-use-cases.md`](docs/founder-use-cases.md) | 5 startup use cases with build guides |
+| [`docs/skill-patterns.md`](docs/skill-patterns.md) | Design patterns and anti-patterns for skills |
+| [`docs/sdk-migration-guide.md`](docs/sdk-migration-guide.md) | Every SDK pattern: batch, sessions, subagents, FastAPI |
+| [`docs/demo-script.md`](docs/demo-script.md) | 5-min live demo script for showing this to others |
+| [GitHub Pages site](https://sinned.github.io/prototype-with-claude/) | Full documentation |
+
+---
 
 ## Requirements
 
-- [Claude Code](https://code.claude.com) (for Phase 1)
-- Python 3.10+ (for Phase 2 SDK examples)
-- `ANTHROPIC_API_KEY` environment variable
-
-## Resources
-
-- [Claude Code docs](https://code.claude.com/docs)
-- [Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
-- [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview)
-- [Agent SDK demos](https://github.com/anthropics/claude-agent-sdk-demos)
+- [Claude Code](https://code.claude.com) — required for Phase 1
+- Python 3.10+ and `ANTHROPIC_API_KEY` — required for Phase 2 SDK examples

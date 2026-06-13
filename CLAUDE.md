@@ -42,6 +42,8 @@ The `description` field is loaded at startup. The body is loaded when triggered.
 ## Slash commands in this repo
 
 - `/new-skill` — Guided wizard to create a new skill from scratch
+- `/eval-skill <name>` — Run test cases, grade outputs with Claude-as-judge, write a report
+- `/improve-skill <name>` — Read the eval report, edit SKILL.md to fix failure patterns
 - `/export-to-sdk` — Generates Agent SDK Python code from an existing skill
 
 ## Agent SDK patterns
