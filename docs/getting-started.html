@@ -53,10 +53,17 @@
       </table>
 
       <div class="callout" style="margin-top:8px">
-        <p><strong>Phase 1 needs no API key.</strong> Claude Code uses your Claude subscription. For Phase 2, copy <code>.env.example</code> to <code>.env</code> and add your key.</p>
+        <p><strong>Phase 1 needs no API key.</strong> Claude Code uses your Claude subscription. For Phase 2, copy <code>.env.example</code> to <code>.env</code>, add your key, then set up a Python venv:</p>
       </div>
       <pre><code>cp .env.example .env
-# Edit .env: replace your-api-key-here with your actual key
+# Edit .env: replace your-api-key-here with your key from platform.claude.com/settings/api-keys
+
+# Create a venv, activate it, and install the SDK
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install claude-agent-sdk
+
+# Load the API key into your environment
 source .env</code></pre>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
@@ -80,15 +87,14 @@ cd prototype-with-claude</code></pre>
         </li>
         <li>
           <div class="step-content">
-            <h3>Try a built-in example skill</h3>
-            <pre><code>/research-agent Stripe</code></pre>
-            <p>Wait — this command isn't installed yet! You need to copy the example skill first:</p>
-            <pre><code># From within Claude Code's terminal, or a separate terminal:
-mkdir -p .claude/skills/research-agent
-cp examples/01-research-agent/SKILL.md .claude/skills/research-agent/SKILL.md</code></pre>
-            <p>Then run the skill:</p>
+            <h3>Try a built-in skill</h3>
+            <p>The repo ships with four skills already installed in <code>.claude/skills/</code>. Try one now:</p>
             <pre><code>/research-agent Stripe</code></pre>
             <p>Claude will search the web, read pages, and save a brief to <code>output/stripe-brief.md</code>.</p>
+            <p>Other built-in skills to try:</p>
+            <pre><code>/qualify-lead Notion
+/generate-content "cold email for a sales tool targeting VP Sales"
+/qualify-lead-demo Retool   # deliberately weak skill — used to demo the eval loop</code></pre>
           </div>
         </li>
         <li>

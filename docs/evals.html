@@ -220,12 +220,17 @@ cp examples/04-evals-and-improvement/test-cases-example.md \
         The eval loop runs as an Agent SDK script too — useful for CI/CD or when you want to run many improvement cycles without supervision.
       </p>
       <pre style="margin-top:16px"><code># Run evals once and get a report
-python examples/04-evals-and-improvement/sdk/eval_runner.py my-skill
+python3 examples/04-evals-and-improvement/sdk/eval_runner.py my-skill
 
 # Run the full loop: eval → improve → eval → improve → until target score
-python examples/04-evals-and-improvement/sdk/improve.py my-skill \
+python3 examples/04-evals-and-improvement/sdk/improve.py my-skill \
   --target-score 0.85 \
-  --max-iterations 5</code></pre>
+  --max-iterations 5
+
+# Save snapshots of SKILL.md before/after each iteration (useful for demos and audits)
+python3 examples/04-evals-and-improvement/sdk/improve.py my-skill \
+  --target-score 0.85 \
+  --save-versions</code></pre>
 
       <p style="margin-top:16px">The improvement loop:</p>
       <ol style="padding-left:20px;font-size:0.9rem;color:var(--text-muted)">
@@ -237,8 +242,101 @@ python examples/04-evals-and-improvement/sdk/improve.py my-skill \
         <li>Repeats until target score or max iterations</li>
       </ol>
 
+      <p style="margin-top:16px;font-size:0.9rem;color:var(--text-muted)">
+        The <code>--save-versions</code> flag is off by default — git history is the right place to track changes in normal use.
+        Turn it on when you want a clean audit trail: snapshots land in <code>.claude/skills/&lt;name&gt;/versions/</code>
+        as <code>SKILL-v0-initial.md</code>, <code>SKILL-v1-after-improve.md</code>, etc.
+      </p>
+
       <div class="callout green" style="margin-top:20px">
         <p><strong>In CI/CD:</strong> Run the eval script on every PR that modifies a SKILL.md. Fail the build if score drops below threshold. This prevents prompt regressions from shipping.</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Real improvement journey -->
+      <h2 id="demo" style="margin-bottom:8px">See it in action — 65% to 100% in one iteration</h2>
+      <p style="color:var(--text-muted);margin-bottom:24px">
+        The repo ships with a real, runnable demo: a deliberately weak skill that starts at 65% and hits 100% after one <code>improve.py</code> call.
+        Every artifact is checked in — you can see exactly what changed and why.
+      </p>
+
+      <h3 style="margin-bottom:12px">The starting point (22 lines, intentionally vague)</h3>
+      <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:10px">File: <code>.claude/skills/qualify-lead-demo/versions/SKILL-v0-initial.md</code></p>
+      <pre><code>---
+name: qualify-lead-demo
+description: A deliberately weak first-draft lead qualifier.
+---
+
+# Lead Qualifier (Demo — Iteration 0)
+
+## Input
+A company name.
+
+## Steps
+1. Look up the company.
+2. Figure out if it's a good fit for our product.
+3. Write something useful.
+
+## Output
+Save your assessment as a markdown file in `output/leads/`.</code></pre>
+
+      <p style="margin-top:12px">That's it — no ICP, no rubric, no output format, no error handling. A real "I'll fill this in later" first draft.</p>
+
+      <h3 style="margin-bottom:12px;margin-top:28px">Baseline eval: 65% (11/17 criteria)</h3>
+      <div style="overflow-x:auto;margin-top:4px">
+        <table>
+          <thead><tr><th>Test case</th><th>Input</th><th>Score</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Clear fit — B2B SaaS</td><td>Retool</td><td>2/5 (40%)</td><td>❌</td></tr>
+            <tr><td>Clear disqualify — consumer</td><td>Duolingo</td><td>4/4 (100%)</td><td>✅</td></tr>
+            <tr><td>Borderline — above ICP size</td><td>Notion</td><td>2/4 (50%)</td><td>⚠️</td></tr>
+            <tr><td>Limited public information</td><td>Runway Financial</td><td>3/4 (75%)</td><td>⚠️</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:12px;font-size:0.875rem;color:var(--text-muted)">
+        Top failures: no tier label (Claude writes "good fit" instead of HOT/WARM/COLD), no recommended next step, fabricated numbers without sources.
+      </p>
+
+      <h3 style="margin-bottom:12px;margin-top:28px">One command fixes it</h3>
+      <pre><code># Reset the demo skill to v0 (already done in the repo)
+cp .claude/skills/qualify-lead-demo/versions/SKILL-v0-initial.md \
+   .claude/skills/qualify-lead-demo/SKILL.md
+
+# Run the improvement loop, saving version snapshots
+python3 examples/04-evals-and-improvement/sdk/improve.py qualify-lead-demo \
+  --save-versions --max-iterations 1
+
+# Re-evaluate
+python3 examples/04-evals-and-improvement/sdk/eval_runner.py qualify-lead-demo</code></pre>
+
+      <h3 style="margin-bottom:12px;margin-top:28px">After one iteration: 100% (17/17 criteria)</h3>
+      <div style="overflow-x:auto;margin-top:4px">
+        <table>
+          <thead><tr><th>Test case</th><th>v0</th><th>v1</th></tr></thead>
+          <tbody>
+            <tr><td>Clear fit — B2B SaaS (Retool)</td><td>40% ❌</td><td>100% ✅</td></tr>
+            <tr><td>Clear disqualify (Duolingo)</td><td>100% ✅</td><td>100% ✅</td></tr>
+            <tr><td>Borderline (Notion)</td><td>50% ⚠️</td><td>100% ✅</td></tr>
+            <tr><td>Limited info (Runway Financial)</td><td>75% ⚠️</td><td>100% ✅</td></tr>
+            <tr><td style="font-weight:600">Overall</td><td style="font-weight:600">65%</td><td style="font-weight:600">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:16px;font-size:0.875rem;color:var(--text-muted)">
+        What the improve loop added: an explicit ICP definition, a tier rubric (HOT/WARM/COLD/DISQUALIFIED),
+        a required output format with examples of good vs. bad next steps,
+        and an anti-fabrication rule ("if you cannot find a data point, say so — do NOT fabricate").
+        22 lines → 47 lines. Total API time: ~3 minutes.
+      </p>
+
+      <div class="callout" style="margin-top:20px">
+        <p>
+          <strong>Full walkthrough:</strong> <a href="https://github.com/sinned/prototype-with-claude/blob/main/docs/demo-improvement-journey.md" target="_blank">docs/demo-improvement-journey.md</a>
+          has the complete story — before/after SKILL.md diff, real eval reports, and what changed between v0 and v1.
+        </p>
       </div>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
