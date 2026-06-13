@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — prototype-with-claude</title>
+  <meta name="description" content="Set up the repo, run your first skill, and build your own AI agent workflow in Claude Code.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none">
+      <div class="nav-logo-icon">P</div>
+      prototype-with-claude
+    </a>
+    <div class="nav-links">
+      <a href="getting-started.html" class="active">Getting Started</a>
+      <a href="examples.html">Examples</a>
+      <a href="evals.html">Evals</a>
+      <a href="sdk-migration.html">Ship It</a>
+    </div>
+    <a href="https://github.com/sinned/prototype-with-claude" class="nav-gh btn btn-secondary" target="_blank">GitHub →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero section-alt" style="padding:48px 0 40px;text-align:left">
+    <div class="container">
+      <h4>Getting Started</h4>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-top:8px">From zero to your first skill in 5 minutes</h1>
+      <p class="hero-sub" style="text-align:left;margin-left:0;margin-top:12px">
+        Everything you need to set up the repo, run a built-in example, and create your first custom AI agent skill.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:800px">
+
+      <!-- Prerequisites -->
+      <h2 style="margin-bottom:20px">Prerequisites</h2>
+      <table>
+        <thead><tr><th>Requirement</th><th>Why</th><th>Install</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Claude Code</strong></td><td>Your agent runtime for Phase 1</td><td><a href="https://code.claude.com" target="_blank">code.claude.com</a></td></tr>
+          <tr><td><strong>Git</strong></td><td>Clone the repo</td><td>Pre-installed on most systems</td></tr>
+          <tr><td><strong>Python 3.10+</strong></td><td>Phase 2 Agent SDK examples</td><td><a href="https://python.org" target="_blank">python.org</a></td></tr>
+          <tr><td><strong>ANTHROPIC_API_KEY</strong></td><td>Phase 2 SDK examples</td><td><a href="https://platform.claude.com" target="_blank">platform.claude.com</a></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:8px">
+        <p>You don't need an API key for Phase 1. Claude Code uses your Claude subscription.</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
+
+      <!-- Setup -->
+      <h2 style="margin-bottom:28px">Setup</h2>
+      <ol class="steps">
+        <li>
+          <div class="step-content">
+            <h3>Clone the repo</h3>
+            <pre><code>git clone https://github.com/sinned/prototype-with-claude
+cd prototype-with-claude</code></pre>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Open in Claude Code</h3>
+            <pre><code>claude</code></pre>
+            <p>Claude Code will read <code>CLAUDE.md</code> automatically. This file tells Claude how to help you in this repo — how to design skills, generate SDK code, and what patterns to follow.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Try a built-in example skill</h3>
+            <pre><code>/research-agent Stripe</code></pre>
+            <p>Wait — this command isn't installed yet! You need to copy the example skill first:</p>
+            <pre><code># From within Claude Code's terminal, or a separate terminal:
+mkdir -p .claude/skills/research-agent
+cp examples/01-research-agent/SKILL.md .claude/skills/research-agent/SKILL.md</code></pre>
+            <p>Then run the skill:</p>
+            <pre><code>/research-agent Stripe</code></pre>
+            <p>Claude will search the web, read pages, and save a brief to <code>output/stripe-brief.md</code>.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Check the output</h3>
+            <pre><code># From the terminal
+cat output/stripe-brief.md</code></pre>
+            <p>Or just ask Claude to show you what was produced.</p>
+          </div>
+        </li>
+      </ol>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
+
+      <!-- Building your own -->
+      <h2 style="margin-bottom:28px">Build your own skill</h2>
+      <p>The fastest path to your first custom skill:</p>
+
+      <ol class="steps">
+        <li>
+          <div class="step-content">
+            <h3>Run the wizard</h3>
+            <pre><code>/new-skill</code></pre>
+            <p>Claude will ask you: What is the job? What are the inputs? What should it produce? It creates the SKILL.md for you.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Test it with 3 real inputs</h3>
+            <pre><code>/your-skill-name example-input-1
+/your-skill-name example-input-2
+/your-skill-name edge-case-input</code></pre>
+            <p>Real inputs reveal problems that obvious test cases don't. Use inputs from your actual use case.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Iterate on the SKILL.md</h3>
+            <p>When the output isn't right, open <code>.claude/skills/your-skill/SKILL.md</code> and make the instructions more specific. Then re-run. This is the core prototyping loop.</p>
+            <div class="callout">
+              <p>The most common fix: vague instructions → specific ones. Replace "research the company" with "search for the company name, their pricing page URL, and their most recent funding news."</p>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Add test cases and run evals</h3>
+            <pre><code># Create test cases
+mkdir -p .claude/skills/your-skill/evals
+# Copy the example and fill in your test inputs + criteria
+cp examples/04-evals-and-improvement/test-cases-example.md \
+   .claude/skills/your-skill/evals/test-cases.md
+
+# Run evals
+/eval-skill your-skill</code></pre>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Improve until it passes</h3>
+            <pre><code>/improve-skill your-skill</code></pre>
+            <p>Claude reads the eval report and edits your SKILL.md to fix the failures. Re-run <code>/eval-skill</code> to measure the improvement.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Export to production code</h3>
+            <pre><code>/export-to-sdk</code></pre>
+            <p>Claude generates <code>sdk/your-skill/agent.py</code> — working Python code that runs the same job autonomously using the Agent SDK.</p>
+          </div>
+        </li>
+      </ol>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
+
+      <!-- Mental model -->
+      <h2 style="margin-bottom:20px">The mental model</h2>
+      <p>There are three things to understand:</p>
+
+      <div style="margin:28px 0;display:grid;gap:16px">
+        <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start">
+          <code style="background:var(--accent-bg);color:var(--accent);padding:6px 12px;border-radius:var(--radius);font-size:0.85rem;white-space:nowrap">SKILL.md</code>
+          <div>
+            <strong>A job description for your AI.</strong> It contains a description (when to trigger), steps (what to do), and output format (what to produce). Claude Code reads it when you invoke the command. Plain markdown — no code.
+          </div>
+        </div>
+        <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start">
+          <code style="background:var(--accent-bg);color:var(--accent);padding:6px 12px;border-radius:var(--radius);font-size:0.85rem;white-space:nowrap">query()</code>
+          <div>
+            <strong>That same job, running autonomously.</strong> The Agent SDK's <code>query()</code> function takes a prompt (your skill instructions) and runs the agent loop — same tools, same Claude — without a human in the loop.
+          </div>
+        </div>
+        <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start">
+          <code style="background:var(--accent-bg);color:var(--accent);padding:6px 12px;border-radius:var(--radius);font-size:0.85rem;white-space:nowrap">evals</code>
+          <div>
+            <strong>How you know it works.</strong> Test cases with binary criteria (yes/no) graded by Claude. Not "does it look good" — "does it include a source URL?" You grade outputs against criteria, find patterns in failures, improve the skill.
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <a href="examples.html" class="btn btn-primary">See the examples →</a>
+        <a href="evals.html" class="btn btn-secondary">Learn about evals</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>prototype-with-claude — built for startup founders by <a href="https://anthropic.com" target="_blank">Anthropic</a></span>
+    <div style="display:flex;gap:20px">
+      <a href="https://github.com/sinned/prototype-with-claude" target="_blank">GitHub</a>
+      <a href="https://code.claude.com/docs" target="_blank">Claude Code docs</a>
+      <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview" target="_blank">Skills docs</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

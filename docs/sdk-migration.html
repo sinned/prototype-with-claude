@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ship It — prototype-with-claude</title>
+  <meta name="description" content="Migrate your validated Claude Code Skill to the Agent SDK for production. Patterns for single agents, batch processing, sessions, subagents, and web app integration.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none">
+      <div class="nav-logo-icon">P</div>
+      prototype-with-claude
+    </a>
+    <div class="nav-links">
+      <a href="getting-started.html">Getting Started</a>
+      <a href="examples.html">Examples</a>
+      <a href="evals.html">Evals</a>
+      <a href="sdk-migration.html" class="active">Ship It</a>
+    </div>
+    <a href="https://github.com/sinned/prototype-with-claude" class="nav-gh btn btn-secondary" target="_blank">GitHub →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero section-alt" style="padding:48px 0 40px;text-align:left">
+    <div class="container">
+      <h4>Ship It — Agent SDK Migration</h4>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-top:8px">Your validated skill, now in production</h1>
+      <p class="hero-sub" style="text-align:left;margin-left:0;margin-top:12px">
+        The Agent SDK gives you the same Claude, the same tools, and the same instructions — now running autonomously in your app.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:820px">
+
+      <!-- When to migrate -->
+      <h2 style="margin-bottom:16px">When to migrate</h2>
+      <p>Migrate from a Skill to the Agent SDK when any of these are true:</p>
+      <div class="card-grid" style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">Automated pipelines</div>
+          <div class="card-desc">You need the agent to run without a human present — cron jobs, webhooks, background tasks.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Batch processing</div>
+          <div class="card-desc">You need to process many inputs — a CSV of leads, a list of articles, a queue of tickets.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Product integration</div>
+          <div class="card-desc">You need to embed the agent in your web app, mobile app, or API.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Multi-agent systems</div>
+          <div class="card-desc">You need to chain agents together or run specialized subagents in parallel.</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:16px">
+        <p><strong>Don't migrate prematurely.</strong> If you're still figuring out what the AI should do, keep prototyping in Claude Code. The migration is easy — premature migration is just friction.</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- The migration is simple -->
+      <h2 style="margin-bottom:16px">The migration is simpler than you think</h2>
+      <p>The core of the migration: copy your SKILL.md instructions into a Python prompt template.</p>
+
+      <div class="compare" style="margin-top:24px">
+        <div class="compare-col left">
+          <h4>Before — SKILL.md</h4>
+          <pre><code>---
+name: research-agent
+description: Research a company
+  and produce a brief.
+---
+
+# Research Agent
+
+## Steps
+1. Search for {topic} using
+   3 targeted queries
+2. Read the top 3 results
+3. Write brief to
+   output/{topic}-brief.md</code></pre>
+        </div>
+        <div class="compare-col">
+          <h4>After — agent.py</h4>
+          <pre><code>PROMPT = """
+Research {topic}.
+
+Steps:
+1. Search for {topic} using
+   3 targeted queries
+2. Read the top 3 results
+3. Write brief to
+   output/{slug}-brief.md
+"""
+
+async def run(topic: str):
+    async for msg in query(
+        prompt=PROMPT.format(
+            topic=topic,
+            slug=slugify(topic)
+        ),
+        options=ClaudeAgentOptions(
+            allowed_tools=[
+                "WebSearch",
+                "WebFetch",
+                "Write",
+            ],
+        ),
+    ):
+        if hasattr(msg, "result"):
+            return msg.result</code></pre>
+        </div>
+      </div>
+
+      <p style="margin-top:16px">The instructions are identical. Only the container changed.</p>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Concept mapping -->
+      <h2 style="margin-bottom:16px">Concept mapping</h2>
+      <table>
+        <thead><tr><th>Skill (Claude Code)</th><th>Agent SDK equivalent</th></tr></thead>
+        <tbody>
+          <tr><td>SKILL.md instructions</td><td><code>prompt</code> parameter</td></tr>
+          <tr><td>Command argument (<code>/skill input</code>)</td><td>Function param → f-string in prompt</td></tr>
+          <tr><td>Listed tools in skill</td><td><code>allowed_tools=[...]</code></td></tr>
+          <tr><td>Writing files</td><td><code>permission_mode="acceptEdits"</code></td></tr>
+          <tr><td>Running bash commands</td><td><code>allowed_tools=["Bash"]</code></td></tr>
+          <tr><td>Web research</td><td><code>allowed_tools=["WebSearch", "WebFetch"]</code></td></tr>
+          <tr><td>Reading config files</td><td>Read at startup, inject into prompt</td></tr>
+          <tr><td>Multi-step with memory</td><td><code>ClaudeAgentOptions(resume=session_id)</code></td></tr>
+          <tr><td>Invoking another skill</td><td><code>ClaudeAgentOptions(agents={...})</code></td></tr>
+        </tbody>
+      </table>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- SDK patterns -->
+      <h2 style="margin-bottom:24px">SDK patterns</h2>
+
+      <h3 style="margin-bottom:10px">1. Single input → single output (the baseline)</h3>
+      <pre><code>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+async def run_agent(input_data: str) -> str | None:
+    result = None
+    async for message in query(
+        prompt=f"Do the job with: {input_data}",
+        options=ClaudeAgentOptions(
+            allowed_tools=["WebSearch", "Write"],
+            permission_mode="acceptEdits",
+        ),
+    ):
+        if hasattr(message, "result"):
+            result = message.result
+    return result
+
+if __name__ == "__main__":
+    print(asyncio.run(run_agent("your input")))</code></pre>
+
+      <h3 style="margin-bottom:10px;margin-top:32px">2. Batch processing (sequential)</h3>
+      <pre><code>async def run_batch(items: list[str]) -> list[dict]:
+    results = []
+    for i, item in enumerate(items, 1):
+        print(f"[{i}/{len(items)}] Processing: {item}")
+        result = await run_agent(item)
+        results.append({"input": item, "result": result})
+    return results</code></pre>
+
+      <h3 style="margin-bottom:10px;margin-top:32px">3. Batch processing (parallel, with concurrency limit)</h3>
+      <pre><code>import asyncio
+
+async def run_batch_parallel(
+    items: list[str],
+    max_concurrent: int = 3,
+) -> list[dict]:
+    semaphore = asyncio.Semaphore(max_concurrent)
+
+    async def run_one(item: str) -> dict:
+        async with semaphore:
+            result = await run_agent(item)
+            return {"input": item, "result": result}
+
+    return await asyncio.gather(*[run_one(item) for item in items])</code></pre>
+
+      <h3 style="margin-bottom:10px;margin-top:32px">4. Load a config file before running</h3>
+      <pre><code>from pathlib import Path
+
+def build_prompt(task: str) -> str:
+    # Load ICP, brand voice, or any other config
+    config = Path("icp.md").read_text() if Path("icp.md").exists() else ""
+    return f"""
+Context / criteria:
+{config}
+
+Task: {task}
+"""</code></pre>
+
+      <h3 style="margin-bottom:10px;margin-top:32px">5. Multi-step with session continuity</h3>
+      <pre><code>from claude_agent_sdk import SystemMessage
+
+async def run_pipeline(steps: list[str]) -> list[str]:
+    session_id = None
+    results = []
+
+    for i, prompt_text in enumerate(steps):
+        options = ClaudeAgentOptions(
+            allowed_tools=["Read", "Write"],
+            resume=session_id if session_id and i > 0 else None,
+        )
+        async for message in query(prompt=prompt_text, options=options):
+            if isinstance(message, SystemMessage) and message.subtype == "init":
+                session_id = message.data.get("session_id")
+            if hasattr(message, "result"):
+                results.append(message.result)
+
+    return results</code></pre>
+
+      <h3 style="margin-bottom:10px;margin-top:32px">6. Subagents for specialized parallel work</h3>
+      <pre><code>from claude_agent_sdk import AgentDefinition
+
+async def run_with_subagents(topic: str) -> str | None:
+    result = None
+    async for message in query(
+        prompt=f"Research {topic} — use web-researcher for data, analyst for synthesis",
+        options=ClaudeAgentOptions(
+            allowed_tools=["Agent", "Write"],
+            agents={
+                "web-researcher": AgentDefinition(
+                    description="Searches and fetches web pages",
+                    prompt="Search for information and return what you find",
+                    tools=["WebSearch", "WebFetch"],
+                ),
+                "analyst": AgentDefinition(
+                    description="Synthesizes information into structured briefs",
+                    prompt="Analyze the provided information and produce a structured brief",
+                    tools=["Read", "Write"],
+                ),
+            },
+        ),
+    ):
+        if hasattr(message, "result"):
+            result = message.result
+    return result</code></pre>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Embedding in a web app -->
+      <h2 style="margin-bottom:16px">Embedding in a web app</h2>
+      <p>The most common production deployment: a FastAPI endpoint that triggers the agent.</p>
+
+      <h3 style="margin-bottom:10px;margin-top:20px">Synchronous endpoint</h3>
+      <pre><code>from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class AgentRequest(BaseModel):
+    input: str
+
+@app.post("/run")
+async def run_endpoint(request: AgentRequest):
+    result = await run_agent(request.input)
+    return {"result": result, "status": "done" if result else "failed"}</code></pre>
+
+      <h3 style="margin-bottom:10px;margin-top:24px">Async endpoint (for long-running jobs)</h3>
+      <pre><code>import uuid
+from fastapi import BackgroundTasks
+
+jobs: dict[str, dict] = {}
+
+@app.post("/run-async")
+async def run_async(request: AgentRequest, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {"status": "running", "result": None}
+
+    async def do_work():
+        result = await run_agent(request.input)
+        jobs[job_id] = {"status": "done", "result": result}
+
+    background_tasks.add_task(do_work)
+    return {"job_id": job_id}
+
+@app.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    return jobs.get(job_id, {"status": "not_found"})</code></pre>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Permission modes -->
+      <h2 style="margin-bottom:16px">Permission modes</h2>
+      <table>
+        <thead><tr><th>Mode</th><th>What it means</th><th>Use when</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>"default"</code></td>
+            <td>Prompts for approval on tool use</td>
+            <td>Development, interactive use</td>
+          </tr>
+          <tr>
+            <td><code>"acceptEdits"</code></td>
+            <td>Auto-approves file edits</td>
+            <td>Production agents that write files but don't run shell commands</td>
+          </tr>
+          <tr>
+            <td><code>"bypassPermissions"</code></td>
+            <td>Auto-approves everything</td>
+            <td>Fully trusted, audited agents only</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:12px">
+        <p><strong>Recommendation:</strong> Use <code>"acceptEdits"</code> for most production agents. Only use <code>"bypassPermissions"</code> after a thorough security review of your prompts and tool access.</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Keep skill and SDK in sync -->
+      <h2 style="margin-bottom:16px">Keep your Skill and SDK code in sync</h2>
+      <p>The prompt in <code>agent.py</code> and the instructions in <code>SKILL.md</code> should always match. Convention to enforce this:</p>
+      <pre style="margin-top:16px"><code># Prompt migrated from: .claude/skills/research-agent/SKILL.md
+# When you update the skill, update this template too.
+PROMPT_TEMPLATE = """
+Research {subject} and produce a structured intelligence brief.
+
+Steps:
+1. Run 3-5 targeted searches...
+"""</code></pre>
+      <p style="margin-top:12px;font-size:0.9rem;color:var(--text-muted)">
+        When you tune the SKILL.md (via <code>/improve-skill</code> or manually), update the matching <code>PROMPT_TEMPLATE</code> constant. The Skill is the source of truth — the SDK code is its production runtime.
+      </p>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <a href="https://code.claude.com/docs/en/agent-sdk/overview" class="btn btn-primary" target="_blank">Agent SDK docs →</a>
+        <a href="evals.html" class="btn btn-secondary">← Evals guide</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>prototype-with-claude — built for startup founders by <a href="https://anthropic.com" target="_blank">Anthropic</a></span>
+    <div style="display:flex;gap:20px">
+      <a href="https://github.com/sinned/prototype-with-claude" target="_blank">GitHub</a>
+      <a href="https://code.claude.com/docs" target="_blank">Claude Code docs</a>
+      <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview" target="_blank">Skills docs</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

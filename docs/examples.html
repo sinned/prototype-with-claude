@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examples — prototype-with-claude</title>
+  <meta name="description" content="Three fully worked examples — Research Agent, Lead Qualifier, Content Generator — each with a Skill and Agent SDK migration.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none">
+      <div class="nav-logo-icon">P</div>
+      prototype-with-claude
+    </a>
+    <div class="nav-links">
+      <a href="getting-started.html">Getting Started</a>
+      <a href="examples.html" class="active">Examples</a>
+      <a href="evals.html">Evals</a>
+      <a href="sdk-migration.html">Ship It</a>
+    </div>
+    <a href="https://github.com/sinned/prototype-with-claude" class="nav-gh btn btn-secondary" target="_blank">GitHub →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero section-alt" style="padding:48px 0 40px;text-align:left">
+    <div class="container">
+      <h4>Examples</h4>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-top:8px">Three patterns. Four examples.</h1>
+      <p class="hero-sub" style="text-align:left;margin-left:0;margin-top:12px">
+        Each example includes a complete Skill and a production Agent SDK migration. Copy, modify, and ship.
+      </p>
+    </div>
+  </section>
+
+  <!-- Pattern overview -->
+  <section class="section">
+    <div class="container">
+      <h2 style="margin-bottom:24px">The three skill patterns</h2>
+      <p>Most startup AI features fit one of these shapes. Pick the closest one and adapt it.</p>
+      <div class="card-grid" style="margin-top:28px">
+        <div class="card">
+          <div class="card-tag">01</div>
+          <div class="card-title">Research &amp; Synthesize</div>
+          <div class="card-desc">
+            <strong>Shape:</strong> Input → Search → Gather → Synthesize → Structured output<br><br>
+            <strong>Tools:</strong> WebSearch, WebFetch, Write<br><br>
+            <strong>Use when</strong> the job is gathering information from multiple sources and packaging it clearly.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-tag">02</div>
+          <div class="card-title">Score &amp; Classify</div>
+          <div class="card-desc">
+            <strong>Shape:</strong> Input → Load rubric → Analyze → Score → Decision + reasoning<br><br>
+            <strong>Tools:</strong> Read, Write, WebSearch<br><br>
+            <strong>Use when</strong> the job is applying a consistent rubric to an input to produce a categorized output.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-tag">03</div>
+          <div class="card-title">Generate &amp; Iterate</div>
+          <div class="card-desc">
+            <strong>Shape:</strong> Input → Research → Plan variations → Generate all → Output set<br><br>
+            <strong>Tools:</strong> Read, Write, WebSearch<br><br>
+            <strong>Use when</strong> the job is producing content where having multiple options has value.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example 1 -->
+  <section class="section section-alt" id="research">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div class="card-tag" style="margin:0">Research &amp; Synthesize</div>
+      </div>
+      <h2 style="margin-bottom:8px">01 — Research Agent</h2>
+      <p style="color:var(--text-muted);margin-bottom:32px">
+        Research any company, person, or topic and produce a structured intelligence brief saved to a file.
+      </p>
+
+      <div class="compare">
+        <div class="compare-col left">
+          <h4>The Skill (prototype)</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin:8px 0 12px">File: <code>.claude/skills/research-agent/SKILL.md</code></p>
+          <pre><code>---
+name: research-agent
+description: Research a company, person,
+  or topic and produce a brief. Use when
+  asked to research or learn about
+  something.
+---
+
+# Research Agent
+
+## Steps
+1. Run 3-5 targeted searches
+2. Fetch 2-3 most relevant URLs
+3. Synthesize: 5-7 key insights
+4. Write brief to output/<subject>-brief.md
+5. Print one-paragraph summary
+
+## Output format
+# [Subject] — Intelligence Brief
+## TL;DR / Overview / Key Facts
+## Recent Developments / Sources</code></pre>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:10px">Run with: <code>/research-agent Stripe</code></p>
+        </div>
+        <div class="compare-col">
+          <h4>The SDK (production)</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin:8px 0 12px">File: <code>examples/01-research-agent/sdk/agent.py</code></p>
+          <pre><code>from claude_agent_sdk import (
+  query, ClaudeAgentOptions
+)
+
+async def research(subject: str):
+    async for message in query(
+        prompt=PROMPT.format(
+            subject=subject
+        ),
+        options=ClaudeAgentOptions(
+            allowed_tools=[
+                "WebSearch",
+                "WebFetch",
+                "Write",
+                "Bash",
+            ],
+            permission_mode="acceptEdits",
+        ),
+    ):
+        if hasattr(message, "result"):
+            return message.result</code></pre>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:10px">Run with: <code>python agent.py "Stripe"</code> or <code>python agent.py --batch companies.txt</code></p>
+        </div>
+      </div>
+
+      <div style="margin-top:24px">
+        <h3 style="margin-bottom:12px">Startup use cases</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="background:var(--bg);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Prospect research before sales calls</span>
+          <span style="background:var(--bg);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Competitive analysis</span>
+          <span style="background:var(--bg);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">VC due diligence</span>
+          <span style="background:var(--bg);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Market landscape briefs</span>
+          <span style="background:var(--bg);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">News monitoring</span>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <a href="https://github.com/sinned/prototype-with-claude/tree/main/examples/01-research-agent" class="btn btn-secondary" target="_blank">View full example →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example 2 -->
+  <section class="section" id="qualifier">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div class="card-tag" style="margin:0">Score &amp; Classify</div>
+      </div>
+      <h2 style="margin-bottom:8px">02 — Lead Qualifier</h2>
+      <p style="color:var(--text-muted);margin-bottom:32px">
+        Research a company and score it against your Ideal Customer Profile. Returns Hot / Warm / Cold / Disqualified with a scorecard and recommended next step.
+      </p>
+
+      <div class="compare">
+        <div class="compare-col left">
+          <h4>Key concept: configurable rubric</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin:8px 0 12px">Create <code>icp.md</code> in your project root:</p>
+          <pre><code># My ICP
+
+## Hard criteria (disqualify if not met)
+- Must be B2B
+- At least 20 employees
+
+## Soft criteria
+- Size: 50-500 employees
+- Series A through Series C
+
+## Strong positive signals
+- Recently raised funding
+- Hiring sales roles
+- Fast headcount growth</code></pre>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:10px">The skill reads <code>icp.md</code> automatically. Change the file → change the scoring criteria.</p>
+        </div>
+        <div class="compare-col">
+          <h4>Output format</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin:8px 0 12px">Saved to <code>output/leads/&lt;company&gt;-qualification.md</code></p>
+          <pre><code># Lead Qualification: Notion
+Tier: WARM
+
+## Decision
+WARM — Strong B2B SaaS fit, but
+headcount above ideal range.
+
+## ICP Scorecard
+| Criterion    | Score | Evidence         |
+|--------------|-------|------------------|
+| Size         |  ⚠️   | ~800 employees   |
+| Industry     |  ✅   | B2B SaaS         |
+| Geography    |  ✅   | US-headquartered |
+| Stage        |  ✅   | Post Series C    |
+| Pain signals |  ✅   | 12 open AE roles |
+
+## Next step
+Book discovery — mention their
+recent Series C and AE expansion.</code></pre>
+        </div>
+      </div>
+
+      <div style="margin-top:24px">
+        <h3 style="margin-bottom:12px">Adapting to other scoring use cases</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">The rubric pattern works for anything you'd score against criteria:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+          <span style="background:var(--bg-alt);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Job application screening</span>
+          <span style="background:var(--bg-alt);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Support ticket routing</span>
+          <span style="background:var(--bg-alt);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Investment deal screening</span>
+          <span style="background:var(--bg-alt);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Content moderation</span>
+          <span style="background:var(--bg-alt);border:1px solid var(--border);padding:4px 12px;border-radius:100px;font-size:0.8rem">Partner vetting</span>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <a href="https://github.com/sinned/prototype-with-claude/tree/main/examples/02-lead-qualifier" class="btn btn-secondary" target="_blank">View full example →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example 3 -->
+  <section class="section section-alt" id="content">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div class="card-tag" style="margin:0">Generate &amp; Iterate</div>
+      </div>
+      <h2 style="margin-bottom:8px">03 — Content Generator</h2>
+      <p style="color:var(--text-muted);margin-bottom:32px">
+        Input a content brief. Claude produces 3 variations with different angles (story-led, data-driven, contrarian) plus a recommendation for which to use.
+      </p>
+
+      <div class="compare">
+        <div class="compare-col left">
+          <h4>Brand voice configuration</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin:8px 0 12px">Create <code>brand-voice.md</code>:</p>
+          <pre><code># Brand Voice
+
+## Tone
+Direct, confident, human.
+No buzzwords or corporate filler.
+
+## Avoid
+- "leverage" (as a verb)
+- "utilize" (use "use")
+- "cutting-edge"
+- Passive voice
+
+## Good example
+"We built a faster way to run team
+retrospectives. Here's what's new."
+
+## Bad example
+"We are excited to announce our
+revolutionary platform that leverages
+cutting-edge AI technology..."</code></pre>
+        </div>
+        <div class="compare-col">
+          <h4>What you get</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin:8px 0 12px">3 files in <code>output/content/&lt;slug&gt;/</code></p>
+          <div style="display:grid;gap:10px">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:0.85rem">
+              <strong>variation-a.md</strong> — Story-led<br>
+              <span style="color:var(--text-muted)">Opens with a customer pain point or founder story</span>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:0.85rem">
+              <strong>variation-b.md</strong> — Data-driven<br>
+              <span style="color:var(--text-muted)">Leads with a statistic or benchmark</span>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:0.85rem">
+              <strong>variation-c.md</strong> — Contrarian<br>
+              <span style="color:var(--text-muted)">Challenges a common assumption</span>
+            </div>
+            <div style="background:var(--accent-bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:0.85rem">
+              <strong>brief-summary.md</strong><br>
+              <span style="color:var(--text-muted)">Comparison table + which to use and why</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <a href="https://github.com/sinned/prototype-with-claude/tree/main/examples/03-content-generator" class="btn btn-secondary" target="_blank">View full example →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to adapt -->
+  <section class="section">
+    <div class="container" style="max-width:760px">
+      <h2 style="margin-bottom:20px">How to adapt an example to your use case</h2>
+      <ol class="steps">
+        <li>
+          <div class="step-content">
+            <h3>Copy the example skill</h3>
+            <pre><code>mkdir -p .claude/skills/my-skill
+cp examples/01-research-agent/SKILL.md .claude/skills/my-skill/SKILL.md</code></pre>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Change the name and description</h3>
+            <p>Edit the frontmatter. The <code>name</code> becomes your slash command. The <code>description</code> controls when Claude auto-triggers it.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Modify the steps for your job</h3>
+            <p>The steps are the most important part. Make them specific to your use case. What exactly should Claude search for? What does "done" look like?</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Customize the output format</h3>
+            <p>Change the file path, the sections, the structure. The more specific you are here, the more consistent the outputs.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Test, eval, improve</h3>
+            <p>Run it on 5 real inputs. Add test cases. Run <code>/eval-skill</code>. Run <code>/improve-skill</code>. Repeat.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div style="margin-top:28px;display:flex;gap:16px;flex-wrap:wrap">
+        <a href="evals.html" class="btn btn-primary">Learn about evals →</a>
+        <a href="sdk-migration.html" class="btn btn-secondary">How to ship it</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>prototype-with-claude — built for startup founders by <a href="https://anthropic.com" target="_blank">Anthropic</a></span>
+    <div style="display:flex;gap:20px">
+      <a href="https://github.com/sinned/prototype-with-claude" target="_blank">GitHub</a>
+      <a href="https://code.claude.com/docs" target="_blank">Claude Code docs</a>
+      <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview" target="_blank">Skills docs</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

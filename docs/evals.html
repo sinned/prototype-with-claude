@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evals &amp; Improvement — prototype-with-claude</title>
+  <meta name="description" content="How to measure skill quality with LLM-as-judge evals and automatically improve your SKILL.md until it hits your target score.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none">
+      <div class="nav-logo-icon">P</div>
+      prototype-with-claude
+    </a>
+    <div class="nav-links">
+      <a href="getting-started.html">Getting Started</a>
+      <a href="examples.html">Examples</a>
+      <a href="evals.html" class="active">Evals</a>
+      <a href="sdk-migration.html">Ship It</a>
+    </div>
+    <a href="https://github.com/sinned/prototype-with-claude" class="nav-gh btn btn-secondary" target="_blank">GitHub →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero section-alt" style="padding:48px 0 40px;text-align:left">
+    <div class="container">
+      <h4>Evals &amp; Improvement</h4>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-top:8px">How to know if your skill actually works</h1>
+      <p class="hero-sub" style="text-align:left;margin-left:0;margin-top:12px">
+        Running a skill on 3 examples isn't enough. Evals give you a systematic, reproducible measure of quality — and the improvement loop fixes failures automatically.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:820px">
+
+      <!-- The problem -->
+      <h2 style="margin-bottom:16px">The problem with "it looks okay"</h2>
+      <p>
+        You run your skill. The output looks good. You ship it. Then in production, 30% of inputs produce garbage output.
+      </p>
+      <p>
+        The problem: LLM outputs vary. What works on your hand-picked test inputs might fail on real-world inputs.
+        Traditional unit tests don't work ("assert output == expected") because outputs are never identical.
+      </p>
+      <p>
+        The solution: <strong>LLM-as-judge.</strong> Write binary quality criteria (yes/no, not "sort of").
+        Have Claude grade outputs against them. Find patterns in what fails. Fix the SKILL.md. Repeat.
+      </p>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- The loop -->
+      <h2 style="margin-bottom:24px">The eval loop</h2>
+
+      <div class="loop">
+        <div class="loop-step">
+          <div class="loop-step-num">1</div>
+          <div class="loop-step-name">Define</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">
+          <div class="loop-step-num">2</div>
+          <div class="loop-step-name">Run</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">
+          <div class="loop-step-num">3</div>
+          <div class="loop-step-name">Grade</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">
+          <div class="loop-step-num">4</div>
+          <div class="loop-step-name">Analyze</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">
+          <div class="loop-step-num">5</div>
+          <div class="loop-step-name">Improve</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step" style="border-color:var(--accent)">
+          <div class="loop-step-num">Repeat</div>
+          <div class="loop-step-name">until ✓</div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:14px;margin-top:8px">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:14px;align-items:start">
+          <strong style="color:var(--accent)">1. Define</strong>
+          <span style="font-size:0.9rem;color:var(--text-muted)">Write test cases: an input + a list of yes/no quality criteria. What does "good output" actually mean?</span>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:14px;align-items:start">
+          <strong style="color:var(--accent)">2. Run</strong>
+          <span style="font-size:0.9rem;color:var(--text-muted)">Execute the skill on every test input. <code>/eval-skill</code> does this for you.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:14px;align-items:start">
+          <strong style="color:var(--accent)">3. Grade</strong>
+          <span style="font-size:0.9rem;color:var(--text-muted)">Claude judges each output against the criteria. ✅ pass or ❌ fail — no partial credit.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:14px;align-items:start">
+          <strong style="color:var(--accent)">4. Analyze</strong>
+          <span style="font-size:0.9rem;color:var(--text-muted)">Group failures by type. What's the root cause in the SKILL.md instructions?</span>
+        </div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:14px;align-items:start">
+          <strong style="color:var(--accent)">5. Improve</strong>
+          <span style="font-size:0.9rem;color:var(--text-muted)"><code>/improve-skill</code> reads the failure patterns and edits your SKILL.md. Surgical changes only.</span>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Writing test cases -->
+      <h2 style="margin-bottom:16px">Writing good test cases</h2>
+      <p>Test cases live in <code>.claude/skills/&lt;skill-name&gt;/evals/test-cases.md</code>. Each case has an input and a list of binary criteria.</p>
+
+      <pre style="margin-top:20px"><code>## Test 1: Well-known company (happy path)
+**Input:** Stripe
+
+**Criteria:**
+- [ ] Output is saved to output/stripe-brief.md
+- [ ] Contains a TL;DR section
+- [ ] Mentions payment processing as core business
+- [ ] Includes at least one specific number (employees, revenue, or growth figure)
+- [ ] Has at least 3 source URLs
+- [ ] Recent developments section mentions something from the last 12 months
+
+## Test 2: Ambiguous input
+**Input:** Apple
+
+**Criteria:**
+- [ ] Defaults to Apple Inc. (the tech company), not apple the fruit
+- [ ] Notes the assumption somewhere in the output
+- [ ] Correctly describes their main business (hardware, software, services)
+- [ ] Output is still complete and useful despite the ambiguity
+
+## Test 3: Very little public information
+**Input:** "Loom before it was acquired by Atlassian"
+
+**Criteria:**
+- [ ] Does NOT make up information it can't verify
+- [ ] Acknowledges information constraints
+- [ ] Still produces a useful brief with what's available</code></pre>
+
+      <div style="margin-top:24px;display:grid;gap:16px">
+        <div>
+          <h3 style="margin-bottom:8px">Good criteria are:</h3>
+          <div class="card-grid" style="margin-top:8px">
+            <div class="card">
+              <div class="card-title" style="color:var(--green)">✓ Binary</div>
+              <div class="card-desc">Yes or no. "Does it include a source URL?" — not "is the sourcing adequate?"</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="color:var(--green)">✓ Specific</div>
+              <div class="card-desc">"Mentions company headcount as a number" — not "includes company info."</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="color:var(--green)">✓ Outcome-focused</div>
+              <div class="card-desc">"Would this help a sales rep prepare for a call?" — not "is it well-formatted?"</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="color:var(--accent)">✗ Avoid</div>
+              <div class="card-desc">Criteria that require human judgment: "is the writing good?" or "is the tone appropriate?"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:20px">
+        <p><strong>How many test cases?</strong> 10–20 per skill. Cover: happy path, edge cases, ambiguous inputs, and adversarial inputs (designed to break the skill). Add new cases whenever you find a production failure.</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- Running evals in Claude Code -->
+      <h2 style="margin-bottom:20px">Running evals in Claude Code</h2>
+      <ol class="steps">
+        <li>
+          <div class="step-content">
+            <h3>Create your test cases</h3>
+            <pre><code>mkdir -p .claude/skills/my-skill/evals
+cp examples/04-evals-and-improvement/test-cases-example.md \
+   .claude/skills/my-skill/evals/test-cases.md
+# Edit the file with your actual inputs and criteria</code></pre>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Run the eval</h3>
+            <pre><code>/eval-skill my-skill</code></pre>
+            <p>Claude runs each test case, grades the outputs, and writes a report to <code>output/evals/my-skill-report.md</code>.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Review the report</h3>
+            <p>The report shows: overall score, per-test scores, failure patterns, and recommendations. If score ≥ 80%, you're in good shape. Below 80%: run improve.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
+            <h3>Improve the skill</h3>
+            <pre><code>/improve-skill my-skill</code></pre>
+            <p>Claude edits your SKILL.md to fix the failure patterns. Then re-run <code>/eval-skill</code> to measure the improvement.</p>
+          </div>
+        </li>
+      </ol>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <!-- SDK automation -->
+      <h2 style="margin-bottom:16px">Automate the improvement loop</h2>
+      <p>
+        The eval loop runs as an Agent SDK script too — useful for CI/CD or when you want to run many improvement cycles without supervision.
+      </p>
+      <pre style="margin-top:16px"><code># Run evals once and get a report
+python examples/04-evals-and-improvement/sdk/eval_runner.py my-skill
+
+# Run the full loop: eval → improve → eval → improve → until target score
+python examples/04-evals-and-improvement/sdk/improve.py my-skill \
+  --target-score 0.85 \
+  --max-iterations 5</code></pre>
+
+      <p style="margin-top:16px">The improvement loop:</p>
+      <ol style="padding-left:20px;font-size:0.9rem;color:var(--text-muted)">
+        <li style="margin-bottom:6px">Runs your test suite and calculates a score</li>
+        <li style="margin-bottom:6px">If score ≥ target: stops and reports success</li>
+        <li style="margin-bottom:6px">Otherwise: asks Claude to analyze failures and edit the SKILL.md</li>
+        <li style="margin-bottom:6px">Re-runs evals to measure the change</li>
+        <li style="margin-bottom:6px">Appends a changelog to the report showing what changed and why</li>
+        <li>Repeats until target score or max iterations</li>
+      </ol>
+
+      <div class="callout green" style="margin-top:20px">
+        <p><strong>In CI/CD:</strong> Run the eval script on every PR that modifies a SKILL.md. Fail the build if score drops below threshold. This prevents prompt regressions from shipping.</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <a href="sdk-migration.html" class="btn btn-primary">How to ship it →</a>
+        <a href="examples.html" class="btn btn-secondary">See the examples</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>prototype-with-claude — built for startup founders by <a href="https://anthropic.com" target="_blank">Anthropic</a></span>
+    <div style="display:flex;gap:20px">
+      <a href="https://github.com/sinned/prototype-with-claude" target="_blank">GitHub</a>
+      <a href="https://code.claude.com/docs" target="_blank">Claude Code docs</a>
+      <a href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview" target="_blank">Skills docs</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
