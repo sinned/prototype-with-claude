@@ -101,6 +101,7 @@ prototype-with-claude/
 ├── .claude/
 │   ├── skills/                 ← Skills that work immediately after cloning
 │   │   ├── qualify-lead/       → /qualify-lead <company>
+│   │   ├── qualify-lead-demo/  → /qualify-lead-demo (weak skill + saved improvement journey)
 │   │   ├── research-agent/     → /research-agent <topic>
 │   │   ├── generate-content/   → /generate-content "<brief>"
 │   │   └── starter-agent/      → template to copy and modify
@@ -239,6 +240,7 @@ From there: call it from a FastAPI endpoint, run it on a CSV, trigger it from a 
 | Resource | What's in it |
 |----------|-------------|
 | [`WALKTHROUGH.md`](WALKTHROUGH.md) | Complete 20-min lead qualifier build, with real outputs and eval results |
+| [`docs/demo-improvement-journey.md`](docs/demo-improvement-journey.md) | Real before/after: a weak skill goes from 65% → 100% in one improve iteration |
 | [`docs/founder-use-cases.md`](docs/founder-use-cases.md) | 5 startup use cases with build guides |
 | [`docs/skill-patterns.md`](docs/skill-patterns.md) | Design patterns and anti-patterns for skills |
 | [`docs/sdk-migration-guide.md`](docs/sdk-migration-guide.md) | Every SDK pattern: batch, sessions, subagents, FastAPI |

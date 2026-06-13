@@ -236,6 +236,10 @@ Then re-run evals to measure:
 
 Repeat until you hit your target (85%+ is a reasonable bar for production). Usually 2-3 cycles.
 
+> **See the loop work end-to-end:** [`docs/demo-improvement-journey.md`](docs/demo-improvement-journey.md) walks through a real before/after — a deliberately-weak skill goes from 65% to 100% in one iteration, with the full SKILL.md diff and eval reports checked into the repo.
+
+> **For demos and teaching:** Run `improve.py --save-versions` to snapshot SKILL.md before/after each iteration. Default off (use git in normal work).
+
 ---
 
 ## Part 6 — Export to production Python (2 minutes)
