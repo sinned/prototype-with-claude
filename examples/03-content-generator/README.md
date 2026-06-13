@@ -63,14 +63,15 @@ See `sdk/agent.py`. The production version can:
 
 ```bash
 cd sdk
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+source ../../../.env   # or: export ANTHROPIC_API_KEY=your-key
 
 # Single brief
-python agent.py "cold email for enterprise SaaS, target: CTO"
+python3 agent.py "cold email for enterprise SaaS, target: CTO"
 
 # Batch from file
-python agent.py --batch briefs.csv
+python3 agent.py --batch briefs.csv
 ```
 
 ## Adapting for other generation use cases

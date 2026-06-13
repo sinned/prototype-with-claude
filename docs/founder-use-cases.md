@@ -203,7 +203,7 @@ python examples/03-content-generator/sdk/agent.py --batch content-calendar.csv
 **Example output structure:**
 ```markdown
 # Product Feedback Synthesis
-*Analyzed: 147 responses | Period: May 2025*
+*Analyzed: 147 responses | Period: May 2026*
 
 ## Top themes
 1. **Slow export performance** (34 mentions, 23%) — "Export takes 10+ minutes for large datasets"

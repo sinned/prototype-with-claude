@@ -62,14 +62,15 @@ See `sdk/agent.py`. The production version can:
 
 ```bash
 cd sdk
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+source ../../../.env   # or: export ANTHROPIC_API_KEY=your-key
 
 # Single lead
-python agent.py "Notion"
+python3 agent.py "Notion"
 
 # Batch from CSV
-python agent.py --batch leads.csv --output results.csv
+python3 agent.py --batch leads.csv --output results.csv
 ```
 
 ## Adapting for other scoring use cases

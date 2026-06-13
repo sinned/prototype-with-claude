@@ -130,9 +130,11 @@ def main():
             print(f"  [{status}] {subject}")
     elif args.subject:
         result = asyncio.run(research(args.subject))
-        if result:
-            print("\n--- Agent summary ---")
-            print(result)
+        if result is None:
+            print("Error: agent query returned no result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+            sys.exit(1)
+        print("\n--- Agent summary ---")
+        print(result)
         print("\nBrief saved to output/ directory.")
     else:
         subject = input("What do you want to research? ").strip()
@@ -140,9 +142,11 @@ def main():
             print("No subject provided.", file=sys.stderr)
             sys.exit(1)
         result = asyncio.run(research(subject))
-        if result:
-            print("\n--- Agent summary ---")
-            print(result)
+        if result is None:
+            print("Error: agent query returned no result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+            sys.exit(1)
+        print("\n--- Agent summary ---")
+        print(result)
         print("\nBrief saved to output/ directory.")
 
 

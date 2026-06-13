@@ -62,14 +62,15 @@ See `sdk/eval_runner.py` — runs evals programmatically. See `sdk/improve.py` �
 
 ```bash
 cd sdk
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+source ../../../.env   # or: export ANTHROPIC_API_KEY=your-key
 
 # Run evals once
-python eval_runner.py research-agent
+python3 eval_runner.py research-agent
 
 # Run the full improvement loop (evals → improve → repeat)
-python improve.py research-agent --target-score 0.85 --max-iterations 5
+python3 improve.py research-agent --target-score 0.85 --max-iterations 5
 ```
 
 ## What makes a good test case

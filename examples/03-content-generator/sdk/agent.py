@@ -148,9 +148,11 @@ def main():
         print(f"\nDone. {len(results)} content sets saved to output/content/")
     elif args.brief:
         result = asyncio.run(generate(args.brief, brand_voice))
-        if result:
-            print("\n--- Agent summary ---")
-            print(result)
+        if result is None:
+            print("Error: agent query returned no result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+            sys.exit(1)
+        print("\n--- Agent summary ---")
+        print(result)
         print("\nVariations saved to output/content/")
     else:
         brief = input("Content brief: ").strip()
@@ -158,9 +160,11 @@ def main():
             print("No brief provided.", file=sys.stderr)
             sys.exit(1)
         result = asyncio.run(generate(brief, brand_voice))
-        if result:
-            print("\n--- Agent summary ---")
-            print(result)
+        if result is None:
+            print("Error: agent query returned no result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+            sys.exit(1)
+        print("\n--- Agent summary ---")
+        print(result)
         print("\nVariations saved to output/content/")
 
 

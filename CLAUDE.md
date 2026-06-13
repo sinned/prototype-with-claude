@@ -39,6 +39,8 @@ description: What this skill does and when to use it. Include trigger phrases.
 
 The `description` field is loaded at startup. The body is loaded when triggered. Keep the description under 200 chars. Make it specific enough that Claude knows when to use it.
 
+**Naming convention:** The skill's `name:` in YAML, the directory name, and the slash command must all match. If the YAML says `name: qualify-lead`, the directory must be `.claude/skills/qualify-lead/` and the user invokes it as `/qualify-lead`. Mismatches break command discovery.
+
 ## Slash commands in this repo
 
 - `/new-skill` — Guided wizard to create a new skill from scratch

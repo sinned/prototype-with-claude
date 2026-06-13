@@ -31,7 +31,7 @@ Claude will:
 
 ```markdown
 # Lead Qualification: Retool
-*Qualified: 2025-06-12 | Tier: HOT*
+*Qualified: 2026-06-12 | Tier: HOT*
 
 ## Decision
 **HOT** — B2B SaaS internal tools platform, Series C ($145M raised), ~450 employees,
@@ -41,11 +41,11 @@ Claude will:
 
 | Criterion       | Score | Evidence                                          |
 |-----------------|-------|---------------------------------------------------|
-| Company size    | ✅    | ~450 employees (LinkedIn, May 2025)               |
+| Company size    | ✅    | ~450 employees (LinkedIn, May 2026)               |
 | Industry fit    | ✅    | Developer tools, internal tooling — B2B SaaS      |
 | Geography       | ✅    | Headquarters: San Francisco, CA; US-primary sales |
 | Stage / funding | ✅    | Series C, $145M total funding (Sequoia, YC)       |
-| Pain signal     | ✅    | 12 open AE roles, 3 SDR roles (LinkedIn, May 2025)|
+| Pain signal     | ✅    | 12 open AE roles, 3 SDR roles (LinkedIn, May 2026)|
 
 ## Company Overview
 Retool is a low-code platform for building internal business applications.
@@ -192,7 +192,7 @@ Claude runs each test case, grades the output against every criterion, finds fai
 
 ```markdown
 # Eval Report: qualify-lead
-*Run: 2025-06-12 | Score: 74% (17/23 criteria)*
+*Run: 2026-06-12 | Score: 74% (17/23 criteria)*
 
 ## Summary
 **74%** — Needs improvement (target: 85%)
@@ -327,4 +327,4 @@ The batch processor runs each lead sequentially, saves a qualification report fo
 
 **Eval score isn't improving after `/improve-skill`** — Look at the specific failing criteria. If they're subjective ("is the tone professional?"), they're hard for Claude to grade consistently. Rewrite them as binary checks ("does the report contain a source URL for each data point?").
 
-**SDK `ModuleNotFoundError`** — Run `pip install claude-agent-sdk`. Requires Python 3.10+.
+**SDK `ModuleNotFoundError`** — Activate the venv first (`source .venv/bin/activate`), then `python3 -m pip install claude-agent-sdk`. Requires Python 3.10+.

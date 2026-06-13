@@ -56,10 +56,11 @@ See `sdk/agent.py` for the production version. It uses the same prompt from the 
 
 ```bash
 cd sdk
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key
-python agent.py "Stripe"
-python agent.py --batch companies.txt  # process a list
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+source ../../../.env   # or: export ANTHROPIC_API_KEY=your-key
+python3 agent.py "Stripe"
+python3 agent.py --batch companies.txt  # process a list
 ```
 
 ## The skill → SDK mapping

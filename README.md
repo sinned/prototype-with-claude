@@ -22,7 +22,7 @@ Claude searches the web, reads LinkedIn job postings and Crunchbase, scores the 
 
 ```markdown
 # Lead Qualification: Retool
-Qualified: 2025-06-12 | Tier: HOT
+Qualified: 2026-06-12 | Tier: HOT
 
 ## Decision
 HOT — Developer tools platform, Series C ($145M), ~450 employees,
@@ -31,7 +31,7 @@ HOT — Developer tools platform, Series C ($145M), ~450 employees,
 ## ICP Scorecard
 | Criterion       | Score | Evidence                             |
 |-----------------|-------|--------------------------------------|
-| Company size    | ✅    | ~450 employees (LinkedIn, Jan 2025)  |
+| Company size    | ✅    | ~450 employees (LinkedIn, Jan 2026)  |
 | Industry fit    | ✅    | Internal tools platform, B2B SaaS    |
 | Geography       | ✅    | SF HQ, US-primary customer base      |
 | Stage / funding | ✅    | Series C, $145M (Sequoia, YC)        |

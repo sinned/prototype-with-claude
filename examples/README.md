@@ -30,9 +30,10 @@ cp examples/<N>-<name>/SKILL.md .claude/skills/<skill-name>/SKILL.md
 ```bash
 # Run the SDK version directly
 cd examples/<N>-<name>/sdk
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key
-python agent.py "your input"
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+source ../../../.env   # or: export ANTHROPIC_API_KEY=your-key
+python3 agent.py "your input"
 ```
 
 ## Adapting an example

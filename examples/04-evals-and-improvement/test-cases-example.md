@@ -1,6 +1,11 @@
-# Test Cases: research-agent
+# Test Cases: &lt;your-skill-name&gt;
 
-Copy this file to `.claude/skills/research-agent/evals/test-cases.md` and customize it.
+**This is a template.** Copy it to `.claude/skills/<your-skill-name>/evals/test-cases.md`
+and replace the title and cases below with cases for your skill.
+
+The sample cases below are for `research-agent` (already installed in this repo as
+`.claude/skills/research-agent/evals/test-cases.md`). Use them as a structural reference,
+then write your own.
 
 Each test case has:
 - `input`: what you pass to the skill

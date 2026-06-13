@@ -111,9 +111,10 @@ Generate these files in `sdk/<skill-name>/`:
 Show the founder how to run it:
 ```bash
 cd sdk/<skill-name>
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key
-python agent.py "your input here"
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+source ../../.env   # or: export ANTHROPIC_API_KEY=your-key
+python3 agent.py "your input here"
 ```
 
 And point out:

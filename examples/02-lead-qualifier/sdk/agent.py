@@ -173,6 +173,10 @@ def main():
 
     elif args.company:
         result = asyncio.run(qualify(args.company, icp_criteria))
+        if result.get("tier") == "UNKNOWN":
+            print("Error: agent query returned no usable result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+            print(f"Raw output: {result.get('decision')}", file=sys.stderr)
+            sys.exit(1)
         print(f"\nResult: {result.get('tier')} — {result.get('decision')}")
         print(f"Full report saved to output/leads/")
     else:
@@ -181,6 +185,10 @@ def main():
             print("No company provided.", file=sys.stderr)
             sys.exit(1)
         result = asyncio.run(qualify(company, icp_criteria))
+        if result.get("tier") == "UNKNOWN":
+            print("Error: agent query returned no usable result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+            print(f"Raw output: {result.get('decision')}", file=sys.stderr)
+            sys.exit(1)
         print(f"\nResult: {result.get('tier')} — {result.get('decision')}")
         print(f"Full report saved to output/leads/")
 
