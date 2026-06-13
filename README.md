@@ -164,11 +164,12 @@ For Phase 2 (running agents in production):
 cp .env.example .env
 # Edit .env and add your key from platform.claude.com/settings/api-keys
 
-# Load it and run
+# Create a venv, load key, install SDK
+python3 -m venv .venv && source .venv/bin/activate
 source .env
-pip install claude-agent-sdk
-python examples/02-lead-qualifier/sdk/agent.py "Retool"
-python examples/02-lead-qualifier/sdk/agent.py --batch leads.csv
+python3 -m pip install claude-agent-sdk
+python3 examples/02-lead-qualifier/sdk/agent.py "Retool"
+python3 examples/02-lead-qualifier/sdk/agent.py --batch leads.csv
 ```
 
 ---

@@ -291,15 +291,16 @@ cp .env.example .env
 # Open .env and replace your-api-key-here with your key from:
 # https://platform.claude.com/settings/api-keys
 
-# Load the key and install the SDK
+# Create a venv, load key, install SDK
+python3 -m venv .venv && source .venv/bin/activate
 source .env
-pip install claude-agent-sdk
+python3 -m pip install claude-agent-sdk
 
 # Single company
-python examples/02-lead-qualifier/sdk/agent.py "Retool"
+python3 examples/02-lead-qualifier/sdk/agent.py "Retool"
 
 # Batch from CSV (needs a 'company' column)
-python examples/02-lead-qualifier/sdk/agent.py --batch leads.csv --output results.csv
+python3 examples/02-lead-qualifier/sdk/agent.py --batch leads.csv --output results.csv
 ```
 
 The batch processor runs each lead sequentially, saves a qualification report for each, and writes a CSV summary with tier and decision for every row. Run it overnight on your CRM export.
