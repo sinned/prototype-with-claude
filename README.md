@@ -160,7 +160,12 @@ claude
 
 For Phase 2 (running agents in production):
 ```bash
-export ANTHROPIC_API_KEY=your-key   # from platform.claude.com
+# Set up your API key (one time)
+cp .env.example .env
+# Edit .env and add your key from platform.claude.com/settings/api-keys
+
+# Load it and run
+source .env
 pip install claude-agent-sdk
 python examples/02-lead-qualifier/sdk/agent.py "Retool"
 python examples/02-lead-qualifier/sdk/agent.py --batch leads.csv

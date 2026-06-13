@@ -286,7 +286,13 @@ async def qualify(company: str, icp_criteria: str) -> dict:
 ## Part 7 — Run on a batch
 
 ```bash
-export ANTHROPIC_API_KEY=your-key   # from platform.claude.com
+# One-time setup: copy the example env file and add your key
+cp .env.example .env
+# Open .env and replace your-api-key-here with your key from:
+# https://platform.claude.com/settings/api-keys
+
+# Load the key and install the SDK
+source .env
 pip install claude-agent-sdk
 
 # Single company

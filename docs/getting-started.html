@@ -48,13 +48,16 @@
           <tr><td><strong>Claude Code</strong></td><td>Your agent runtime for Phase 1</td><td><a href="https://code.claude.com" target="_blank">code.claude.com</a></td></tr>
           <tr><td><strong>Git</strong></td><td>Clone the repo</td><td>Pre-installed on most systems</td></tr>
           <tr><td><strong>Python 3.10+</strong></td><td>Phase 2 Agent SDK examples</td><td><a href="https://python.org" target="_blank">python.org</a></td></tr>
-          <tr><td><strong>ANTHROPIC_API_KEY</strong></td><td>Phase 2 SDK examples</td><td><a href="https://platform.claude.com" target="_blank">platform.claude.com</a></td></tr>
+          <tr><td><strong>ANTHROPIC_API_KEY</strong></td><td>Phase 2 SDK examples only</td><td><a href="https://platform.claude.com/settings/api-keys" target="_blank">platform.claude.com</a></td></tr>
         </tbody>
       </table>
 
       <div class="callout" style="margin-top:8px">
-        <p>You don't need an API key for Phase 1. Claude Code uses your Claude subscription.</p>
+        <p><strong>Phase 1 needs no API key.</strong> Claude Code uses your Claude subscription. For Phase 2, copy <code>.env.example</code> to <code>.env</code> and add your key.</p>
       </div>
+      <pre><code>cp .env.example .env
+# Edit .env: replace your-api-key-here with your actual key
+source .env</code></pre>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
 
