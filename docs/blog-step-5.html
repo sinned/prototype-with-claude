@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 5: Build Your Prototype with Claude Code — prototype-with-claude</title>
+  <meta name="description" content="Complete walkthrough of prototype-with-claude — the Step 5 handoff from found-with-claude. Write a skill, run evals, auto-improve, and ship to production.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .post-meta {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      font-size: 0.85rem; color: var(--text-muted); margin-bottom: 36px;
+    }
+    .post-meta-tag {
+      background: var(--accent-bg); color: var(--accent);
+      padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .post-body { max-width: 740px; }
+    .post-body h2 { margin: 56px 0 16px; padding-top: 8px; }
+    .post-body h3 { margin: 32px 0 12px; }
+    .post-body p { margin-bottom: 16px; }
+    .post-body ul, .post-body ol {
+      padding-left: 22px; margin: 16px 0; font-size: 0.95rem; color: var(--text-muted);
+    }
+    .post-body li { margin-bottom: 6px; }
+    .post-body pre { margin: 20px 0 24px; }
+    .post-body hr { border: none; border-top: 1px solid var(--border); margin: 52px 0; }
+    .breadcrumb {
+      font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .breadcrumb a { color: var(--text-muted); }
+    .breadcrumb a:hover { color: var(--accent); }
+    .step-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--bg-alt); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 10px 18px;
+      font-size: 0.875rem; margin-bottom: 28px;
+    }
+    .step-badge-num {
+      width: 32px; height: 32px; background: var(--accent); border-radius: 50%;
+      color: white; font-weight: 700; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-badge-text { font-size: 0.85rem; color: var(--text-muted); }
+    .step-badge-text strong { color: var(--text); }
+    .toc {
+      background: var(--bg-alt); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 20px 24px; margin: 32px 0;
+    }
+    .toc h4 { margin-bottom: 12px; }
+    .toc ol { padding-left: 18px; margin: 0; }
+    .toc li { margin-bottom: 4px; font-size: 0.875rem; }
+    .toc a { color: var(--text-muted); }
+    .toc a:hover { color: var(--accent); }
+    .next-step-card {
+      background: var(--bg-dark); color: #E8E4DC;
+      border-radius: var(--radius-lg); padding: 32px 36px; margin-top: 48px;
+    }
+    .next-step-card h3 { color: white; margin-bottom: 8px; }
+    .next-step-card p { color: #9E9A92; max-width: none; }
+    .next-step-card a.btn-primary { margin-top: 20px; }
+    .inline-cmd {
+      display: inline-block;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      font-size: 0.85em; font-weight: 600;
+      background: var(--accent-bg); color: var(--accent);
+      padding: 2px 8px; border-radius: var(--radius);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" style="text-decoration:none">
+      <div class="nav-logo-icon">P</div>
+      prototype-with-claude
+    </a>
+    <div class="nav-links">
+      <a href="getting-started.html">Getting Started</a>
+      <a href="examples.html">Examples</a>
+      <a href="evals.html">Evals</a>
+      <a href="sdk-migration.html">Ship It</a>
+      <a href="blog-step-5.html" class="active">Guide</a>
+    </div>
+    <a href="https://github.com/sinned/prototype-with-claude" class="nav-gh btn btn-secondary" target="_blank">GitHub →</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="section">
+    <div class="container">
+
+      <div class="breadcrumb">
+        <a href="https://github.com/sinned/found-with-claude" target="_blank">found-with-claude</a>
+        <span>›</span>
+        <span>Step 5: Build Prototype</span>
+        <span>›</span>
+        <span>prototype-with-claude</span>
+      </div>
+
+      <div class="post-body">
+
+        <div class="step-badge">
+          <div class="step-badge-num">5</div>
+          <div class="step-badge-text">
+            <strong>Step 5 of 11 in found-with-claude</strong><br>
+            You've scoped what to build. Now build it — and validate it works before writing a line of production code.
+          </div>
+        </div>
+
+        <h1 style="margin-bottom:16px">Build Your Prototype<br>with Claude Code</h1>
+
+        <div class="post-meta">
+          <span class="post-meta-tag">Tutorial</span>
+          <span>~20 minute read</span>
+          <span>·</span>
+          <span>Phase 1 + Phase 2 walkthrough</span>
+        </div>
+
+        <p style="font-size:1.05rem;color:var(--text-muted);margin-bottom:28px">
+          You've done the hard thinking in <a href="https://github.com/sinned/found-with-claude" target="_blank">found-with-claude</a>:
+          mapped the opportunity, talked to customers, stress-tested with synthetic panels, and defined your product strategy.
+          Step 4 ended with a product brief. Step 5 is where you build the thing.
+        </p>
+
+        <p>
+          But "build" doesn't mean write production code yet. It means: define exactly what your AI agent should do, prove it works on real inputs, measure the quality, and iterate until it's reliable. <em>Then</em> write the code.
+        </p>
+        <p>
+          This guide walks through <code>prototype-with-claude</code> end to end — from your first skill run to a production-ready Python agent. Every step is a real command you can run.
+        </p>
+
+        <div class="toc">
+          <h4>In this guide</h4>
+          <ol>
+            <li><a href="#what-youre-building">What you're actually building</a></li>
+            <li><a href="#setup">Setup — 2 minutes</a></li>
+            <li><a href="#first-skill">Run a built-in skill immediately</a></li>
+            <li><a href="#your-skill">Write your own skill</a></li>
+            <li><a href="#test-cases">Define quality with test cases</a></li>
+            <li><a href="#eval-loop">Measure and improve</a></li>
+            <li><a href="#ship">Export to production Python</a></li>
+            <li><a href="#whats-next">What comes next (Step 6)</a></li>
+          </ol>
+        </div>
+
+        <hr>
+
+        <h2 id="what-youre-building">What you're actually building</h2>
+
+        <p>
+          The output of this step isn't an MVP. It's a <strong>validated AI workflow</strong> — an agent that reliably does one job, tested against real inputs, with a measurable quality score.
+        </p>
+
+        <p>
+          That workflow is captured as a <strong>Skill</strong>: a plain-text file (<code>SKILL.md</code>) that tells Claude what to do, step by step. Claude Code reads it and runs it immediately. No deployment, no infrastructure, no wasted API calls on behavior that doesn't work yet.
+        </p>
+
+        <p>
+          Once the skill passes its eval suite, a single command wraps it in production Python using the Claude Agent SDK. You move from "it works in my terminal" to "it runs in my product" without rewriting the logic.
+        </p>
+
+        <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 28px;margin:28px 0">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;text-align:center">
+            <div>
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);margin-bottom:6px">Phase 1 — Prototype</div>
+              <div style="font-weight:600;margin-bottom:4px">SKILL.md</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">Write in minutes<br>Iterate in seconds<br>No code</div>
+            </div>
+            <div style="font-size:1.8rem;color:var(--border-strong)">→</div>
+            <div>
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--green);margin-bottom:6px">Phase 2 — Ship</div>
+              <div style="font-weight:600;margin-bottom:4px">agent.py</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">Same instructions<br>Runs autonomously<br>In your product</div>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <h2 id="setup">Setup — 2 minutes</h2>
+
+        <p>You need Claude Code installed. That's the only requirement for Phase 1.</p>
+
+        <pre><code>git clone https://github.com/sinned/prototype-with-claude
+cd prototype-with-claude
+claude</code></pre>
+
+        <p>
+          Claude Code reads <code>CLAUDE.md</code> automatically when it opens — this file tells Claude how to help you design skills, debug them, and generate SDK code. You don't need to set anything up; the instructions are already there.
+        </p>
+
+        <div class="callout">
+          <p><strong>No API key needed for Phase 1.</strong> Claude Code uses your Claude subscription. You only need an <code>ANTHROPIC_API_KEY</code> for Phase 2 (running agents autonomously in Python). Add it to <code>.env</code> when you get there.</p>
+        </div>
+
+        <p>Four skills are already installed and ready to run:</p>
+
+        <table>
+          <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><code>/qualify-lead &lt;company&gt;</code></td><td>Scores a company against an ICP, returns HOT/WARM/COLD</td></tr>
+            <tr><td><code>/research-agent &lt;topic&gt;</code></td><td>Researches any topic and produces a structured brief</td></tr>
+            <tr><td><code>/generate-content "&lt;brief&gt;"</code></td><td>Produces 3 content variations with different angles</td></tr>
+            <tr><td><code>/qualify-lead-demo &lt;company&gt;</code></td><td>Deliberately weak skill — used to demo the eval+improve loop</td></tr>
+          </tbody>
+        </table>
+
+        <hr>
+
+        <h2 id="first-skill">Run a built-in skill immediately</h2>
+
+        <p>
+          Before building your own skill, run one of the built-in examples so you understand what you're aiming for.
+        </p>
+
+        <p>
+          If your prototype involves any kind of research, scoring, or content generation, the lead qualifier is the best starting point. Run it now:
+        </p>
+
+        <pre><code>/qualify-lead Retool</code></pre>
+
+        <p>Claude will:</p>
+        <ol>
+          <li>Search for the company's headcount, funding stage, and business model</li>
+          <li>Search for recent job postings (AE, SDR, revenue roles)</li>
+          <li>Score each criterion against the ICP</li>
+          <li>Write a qualification report to <code>output/leads/retool-qualification.md</code></li>
+        </ol>
+
+        <p>The output looks like this:</p>
+
+        <pre><code># Lead Qualification: Retool
+Tier: HOT
+
+## Decision
+HOT — B2B SaaS internal tools platform, Series C ($145M raised), ~450 employees,
+12 open Account Executive roles confirming active GTM investment.
+
+## ICP Scorecard
+| Criterion    | Score | Evidence                                       |
+|--------------|-------|------------------------------------------------|
+| Company size | ✅    | ~450 employees (LinkedIn, 2026)                |
+| Industry     | ✅    | Developer tools, B2B SaaS                      |
+| Geography    | ✅    | SF HQ, US-primary                              |
+| Stage        | ✅    | Series C, $145M (Sequoia, YC)                  |
+| Pain signals | ✅    | 12 open AE roles, 3 SDR roles (LinkedIn, 2026) |
+
+## Recommended next step
+Book discovery with VP Sales. Reference the SDR build-out —
+they're building outbound motion and likely evaluating sales tools.
+
+## Sources
+- https://retool.com/about
+- https://www.linkedin.com/company/tryretool/jobs/
+- https://www.crunchbase.com/organization/retool</code></pre>
+
+        <p>
+          Notice what just happened: Claude ran a multi-step research and analysis workflow — web searches, fetching pages, scoring criteria, writing a structured output — from a single command, with no code. That's the prototype pattern.
+        </p>
+
+        <p>
+          Try a few more inputs to see how the skill handles different cases:
+        </p>
+
+        <pre><code>/qualify-lead Notion         # borderline — large headcount
+/qualify-lead Duolingo       # should be DISQUALIFIED (B2C)
+/qualify-lead "a16z"         # should be DISQUALIFIED (VC, not a company)</code></pre>
+
+        <hr>
+
+        <h2 id="your-skill">Write your own skill</h2>
+
+        <p>
+          Now translate your Step 4 product brief into a skill. The fastest path is using the wizard:
+        </p>
+
+        <pre><code>/new-skill</code></pre>
+
+        <p>Claude will ask you three questions:</p>
+        <ol>
+          <li>What is the job? (one sentence)</li>
+          <li>What are the inputs?</li>
+          <li>What should it produce?</li>
+        </ol>
+
+        <p>It creates <code>.claude/skills/your-skill/SKILL.md</code> for you. Here's what that file looks like for the lead qualifier:</p>
+
+        <pre><code>---
+name: qualify-lead
+description: Qualify a company as a sales lead against our ICP.
+  Use when asked to qualify, score, or evaluate a company.
+---
+
+# Lead Qualifier
+
+## Steps
+1. Search for the company: headcount, funding, business model, job postings
+2. Score each ICP criterion: ✅ match / ⚠️ partial / ❌ mismatch / ❓ unknown
+3. Assign tier: HOT, WARM, COLD, or DISQUALIFIED
+4. Write report to output/leads/{company-slug}-qualification.md
+
+## ICP
+Load icp.md if it exists. Default: B2B SaaS, 50–500 employees, Series A–C.
+
+## Output format
+# Lead Qualification: {company}
+Tier: {HOT|WARM|COLD|DISQUALIFIED}
+
+## Decision
+[3-5 sentences: business model, size, stage, signals]
+
+## ICP Scorecard
+| Criterion | Score | Evidence |
+...
+
+## Recommended next step
+[Single concrete action with owner and channel]
+
+## Sources
+[URL for every factual claim]</code></pre>
+
+        <h3>The three skill patterns</h3>
+
+        <p>Most AI features fit one of these shapes. Pick the one closest to your prototype:</p>
+
+        <table>
+          <thead><tr><th>Pattern</th><th>Shape</th><th>Use for</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Research &amp; Synthesize</strong></td>
+              <td>Input → Search → Gather → Synthesize → Report</td>
+              <td>Prospect research, market analysis, due diligence</td>
+            </tr>
+            <tr>
+              <td><strong>Score &amp; Classify</strong></td>
+              <td>Input → Load rubric → Analyze → Score → Decision</td>
+              <td>Lead scoring, ticket routing, content moderation</td>
+            </tr>
+            <tr>
+              <td><strong>Generate &amp; Iterate</strong></td>
+              <td>Brief → Research → Draft → Variations → Output</td>
+              <td>Copy, outreach, docs, content at scale</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>What makes a skill work</h3>
+
+        <p>
+          The most common reason a skill produces bad output: vague instructions. The fix is always to make the steps more specific.
+        </p>
+
+        <table>
+          <thead><tr><th>Instead of this</th><th>Write this</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>"Research the company"</td>
+              <td>"Search for: company name + 'headcount', company name + 'funding', company name + 'jobs'"</td>
+            </tr>
+            <tr>
+              <td>"Write a report"</td>
+              <td>"Write a markdown file with exactly these sections: Decision, Scorecard, Next Step, Sources"</td>
+            </tr>
+            <tr>
+              <td>"Use your judgment"</td>
+              <td>"If headcount is unavailable, mark it ❓ and do NOT estimate"</td>
+            </tr>
+            <tr>
+              <td>"Make it useful"</td>
+              <td>"Recommended next step: one action, one owner, one channel. Example: 'Email VP Sales at Retool to book a 30-min discovery call.'"</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Run your skill on 3–5 real inputs from your actual use case. Each time the output isn't right, open <code>SKILL.md</code>, make the instructions more specific, and re-run. This is the prototyping loop.
+        </p>
+
+        <div class="callout">
+          <p>
+            <strong>Load a config file.</strong> If your skill needs criteria that will change over time (an ICP, brand voice guidelines, scoring rubrics), put them in a separate file (<code>icp.md</code>, <code>brand-voice.md</code>) and tell your skill to read it. This keeps your business logic editable without touching the skill itself.
+          </p>
+        </div>
+
+        <hr>
+
+        <h2 id="test-cases">Define quality with test cases</h2>
+
+        <p>
+          Running a skill on 3 examples isn't enough. Test cases give you a reproducible score you can track over time.
+        </p>
+
+        <p>Create <code>.claude/skills/your-skill/evals/test-cases.md</code>. Each test case is an input plus a list of binary (yes/no) quality criteria:</p>
+
+        <pre><code>## Test 1: Happy path — clear fit
+**Input:** Retool
+
+**Criteria:**
+- [ ] Tier is HOT or WARM
+- [ ] ICP Scorecard table is present with at least 4 rows
+- [ ] Every scorecard row has ✅, ⚠️, ❌, or ❓ — no blank scores
+- [ ] Recommended next step names a specific owner and channel
+- [ ] At least 2 source URLs are cited
+
+---
+
+## Test 2: Clear disqualify
+**Input:** Duolingo
+
+**Criteria:**
+- [ ] Tier is COLD or DISQUALIFIED
+- [ ] Output mentions consumer focus or B2C as the reason
+- [ ] Does NOT recommend booking a discovery call
+- [ ] Sources are cited
+
+---
+
+## Test 3: Edge case — missing information
+**Input:** "Runway Financial"
+
+**Criteria:**
+- [ ] Report is produced (not an error)
+- [ ] Unknown data points are marked ❓, not guessed
+- [ ] Does NOT fabricate headcount or funding without a source
+- [ ] Recommended next step is still specific and actionable</code></pre>
+
+        <h3>What makes a good criterion</h3>
+
+        <p>Good criteria are binary (yes or no), specific, and outcome-focused:</p>
+
+        <ul>
+          <li><strong>Good:</strong> "Does the output contain a source URL for each specific number cited?"</li>
+          <li><strong>Good:</strong> "Is the tier exactly one of: HOT, WARM, COLD, DISQUALIFIED?"</li>
+          <li><strong>Bad:</strong> "Is the writing good?" (subjective)</li>
+          <li><strong>Bad:</strong> "Is the output comprehensive?" (undefined)</li>
+        </ul>
+
+        <p>
+          Aim for 10–20 test cases total. Cover: the happy path, the expected failure (a clearly wrong input), edge cases (ambiguous inputs, missing data), and adversarial inputs (things designed to break the skill).
+        </p>
+
+        <hr>
+
+        <h2 id="eval-loop">Measure and improve</h2>
+
+        <p>
+          With test cases written, run the eval:
+        </p>
+
+        <pre><code>/eval-skill your-skill</code></pre>
+
+        <p>
+          Claude runs each test case, grades the outputs against your criteria, finds patterns in what failed, and writes a report to <code>output/evals/your-skill-report.md</code>. A typical first-run report:
+        </p>
+
+        <pre><code># Eval Report: qualify-lead
+Run: 2026-06-14 | Score: 74% (17/23 criteria)
+
+## Summary
+74% — Needs improvement (target: 85%)
+
+| Test case             | Score      | Status |
+|-----------------------|------------|--------|
+| Retool (hot lead)     | 100% (5/5) | ✅     |
+| Duolingo (disqualify) | 80% (4/5)  | ⚠️     |
+| Notion (edge case)    | 60% (3/5)  | ⚠️     |
+| Runway (limited info) | 40% (2/5)  | ❌     |
+
+## Top failure patterns
+
+### 1. Missing source citations on low-info companies
+Root cause: steps don't require citing a source for every data point.
+Fix: add "cite the source URL for every specific number" to Step 2.
+
+### 2. Fabricated headcount when data is unavailable
+Root cause: no anti-hallucination instruction.
+Fix: add "if headcount is unavailable, mark it ❓ — do NOT estimate."</code></pre>
+
+        <p>
+          Then auto-fix it:
+        </p>
+
+        <pre><code>/improve-skill your-skill</code></pre>
+
+        <p>
+          Claude reads the failure patterns, edits <code>SKILL.md</code> directly to fix them, and tells you what changed. Re-run <code>/eval-skill</code> to measure the improvement. Repeat until you hit 85%+ (a reasonable production bar).
+        </p>
+
+        <h3>See it in action: 65% → 100% in one iteration</h3>
+
+        <p>
+          The repo ships with a live demo of this loop. The <code>qualify-lead-demo</code> skill starts as a 22-line first draft that scores 65%. After one <code>improve</code> run it hits 100% — with version snapshots saved so you can see the exact diff.
+        </p>
+
+        <pre><code># Run the demo yourself
+python3 examples/04-evals-and-improvement/sdk/eval_runner.py qualify-lead-demo
+# → 65% (11/17 criteria)
+
+python3 examples/04-evals-and-improvement/sdk/improve.py qualify-lead-demo --save-versions
+# → edits SKILL.md: adds ICP, tier rubric, output format, anti-fabrication rule
+
+python3 examples/04-evals-and-improvement/sdk/eval_runner.py qualify-lead-demo
+# → 100% (17/17 criteria)</code></pre>
+
+        <p>
+          The <code>--save-versions</code> flag snapshots <code>SKILL.md</code> before and after each iteration to <code>.claude/skills/qualify-lead-demo/versions/</code>. In normal use you rely on git history — this flag is for demos and audits.
+        </p>
+
+        <p>Full diff and analysis: <a href="evals.html#demo">Evals → See it in action →</a></p>
+
+        <h3>Automate the loop in the SDK</h3>
+
+        <p>
+          For skills that need many improvement cycles, or for running evals in CI, the SDK scripts automate the full loop:
+        </p>
+
+        <pre><code># Set up Python environment (one time)
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install claude-agent-sdk
+source .env   # loads ANTHROPIC_API_KEY
+
+# Run: eval → improve → eval → until target score
+python3 examples/04-evals-and-improvement/sdk/improve.py your-skill \
+  --target-score 0.85 \
+  --max-iterations 5</code></pre>
+
+        <p>
+          This runs without supervision: evaluate, find failures, edit SKILL.md, re-evaluate, repeat — until the target score is hit or max iterations is reached. Run it overnight on a complex skill and come back to a passing eval.
+        </p>
+
+        <hr>
+
+        <h2 id="ship">Export to production Python</h2>
+
+        <p>
+          Once the skill passes evals, exporting to production Python is one command:
+        </p>
+
+        <pre><code>/export-to-sdk</code></pre>
+
+        <p>
+          Claude generates <code>sdk/your-skill/agent.py</code>. The generated code uses the same instructions as your <code>SKILL.md</code> — same prompt, same tools, now running autonomously via the Agent SDK:
+        </p>
+
+        <pre><code>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
+from pathlib import Path
+
+PROMPT_TEMPLATE = """
+Qualify this company as a sales lead: {company}
+
+ICP criteria:
+{icp}
+
+Steps:
+1. Search for headcount, funding, business model, and job postings
+2. Score each criterion: ✅ match / ⚠️ partial / ❌ mismatch / ❓ unknown
+3. Assign tier: HOT, WARM, COLD, or DISQUALIFIED
+4. Write report to output/leads/{slug}-qualification.md
+5. Return JSON: {{"company": "...", "tier": "...", "decision": "..."}}
+"""
+
+async def qualify(company: str) -> dict:
+    icp = Path("icp.md").read_text() if Path("icp.md").exists() else ""
+    result = None
+    async for message in query(
+        prompt=PROMPT_TEMPLATE.format(company=company, icp=icp, slug=company.lower()),
+        options=ClaudeAgentOptions(
+            allowed_tools=["WebSearch", "WebFetch", "Write"],
+            permission_mode="acceptEdits",
+        ),
+    ):
+        if hasattr(message, "result"):
+            result = message.result
+    if result is None:
+        raise RuntimeError("Agent returned no result. Check ANTHROPIC_API_KEY.")
+    return result
+
+if __name__ == "__main__":
+    import sys
+    company = sys.argv[1] if len(sys.argv) > 1 else "Retool"
+    print(asyncio.run(qualify(company)))</code></pre>
+
+        <p>
+          From there, plug it into your product:
+        </p>
+
+        <pre><code># Single company
+python3 sdk/qualify-lead/agent.py "Retool"
+
+# Batch from CSV (add --batch support to agent.py)
+python3 sdk/qualify-lead/agent.py --batch leads.csv --output results.csv
+
+# FastAPI endpoint — trigger it from a webhook or UI
+@app.post("/qualify")
+async def qualify_endpoint(req: QualifyRequest):
+    result = await qualify(req.company)
+    return {"tier": result["tier"], "decision": result["decision"]}</code></pre>
+
+        <div class="callout green">
+          <p><strong>The key insight:</strong> the instructions in <code>agent.py</code> are the same instructions that were in <code>SKILL.md</code>. What you tuned during prototyping is exactly what runs in production. The migration didn't change the behavior — only the runtime.</p>
+        </div>
+
+        <h3>Concept mapping: Skill → SDK</h3>
+
+        <table>
+          <thead><tr><th>In the Skill (Claude Code)</th><th>In the SDK (Python)</th></tr></thead>
+          <tbody>
+            <tr><td>SKILL.md instructions</td><td><code>PROMPT_TEMPLATE</code> string</td></tr>
+            <tr><td>Command argument (<code>/skill input</code>)</td><td>Function parameter → f-string</td></tr>
+            <tr><td>Tools listed in skill</td><td><code>allowed_tools=[...]</code></td></tr>
+            <tr><td>Writing files</td><td><code>permission_mode="acceptEdits"</code></td></tr>
+            <tr><td>Config file (icp.md)</td><td>Read at startup, inject into prompt</td></tr>
+          </tbody>
+        </table>
+
+        <hr>
+
+        <h2 id="whats-next">What comes next</h2>
+
+        <p>
+          At this point you have:
+        </p>
+
+        <ul>
+          <li>A working agent skill with a measured quality score</li>
+          <li>A production Python script that runs the same job autonomously</li>
+          <li>A test suite you can run on every future change to prevent regressions</li>
+        </ul>
+
+        <p>
+          The next step in <a href="https://github.com/sinned/found-with-claude" target="_blank">found-with-claude</a> is getting the prototype in front of real users. The <code>/first-users-outreach</code> skill helps you draft the outreach and prioritize who to contact first.
+        </p>
+
+        <div class="next-step-card">
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6B6560;margin-bottom:12px">Up next in found-with-claude</div>
+          <h3>Step 6: First Users Outreach</h3>
+          <p>
+            You have a working prototype. Now use <code>/first-users-outreach</code> to identify who to contact first, draft personalized outreach, and prioritize your early-access list.
+          </p>
+          <a href="https://github.com/sinned/found-with-claude" class="btn btn-primary" target="_blank" style="margin-top:20px;display:inline-flex">
+            Continue in found-with-claude →
+          </a>
+        </div>
+
+        <hr>
+
+        <h2 style="margin-top:0">Quick reference</h2>
+
+        <p>All the commands in one place:</p>
+
+        <pre><code># Phase 1: Prototype in Claude Code
+# (run from inside `claude` in the repo directory)
+
+/new-skill                        # wizard: creates SKILL.md for you
+/your-skill-name your-input       # run the skill
+/eval-skill your-skill            # grade outputs, write report
+/improve-skill your-skill         # edit SKILL.md to fix failures
+/export-to-sdk                    # generate agent.py
+
+# Phase 2: Run in production
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install claude-agent-sdk
+source .env
+
+# Single run
+python3 sdk/your-skill/agent.py "your input"
+
+# Automated improvement loop (SDK)
+python3 examples/04-evals-and-improvement/sdk/improve.py your-skill \
+  --target-score 0.85 --max-iterations 5</code></pre>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:40px">
+          <a href="getting-started.html" class="btn btn-primary">Setup guide →</a>
+          <a href="evals.html" class="btn btn-secondary">Evals deep dive</a>
+          <a href="sdk-migration.html" class="btn btn-secondary">SDK patterns</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>prototype-with-claude — built for startup founders by <a href="https://anthropic.com" target="_blank">Anthropic</a></span>
+    <div style="display:flex;gap:20px">
+      <a href="https://github.com/sinned/prototype-with-claude" target="_blank">GitHub</a>
+      <a href="https://github.com/sinned/found-with-claude" target="_blank">found-with-claude</a>
+      <a href="https://code.claude.com/docs" target="_blank">Claude Code docs</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
