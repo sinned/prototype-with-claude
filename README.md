@@ -105,30 +105,47 @@ prototype-with-claude/
 ├── .claude/
 │   ├── skills/                 ← Skills that work immediately after cloning
 │   │   ├── qualify-lead/       → /qualify-lead <company>
-│   │   ├── qualify-lead-demo/  → /qualify-lead-demo (weak skill + saved improvement journey)
+│   │   │   └── evals/          → test cases for /eval-skill
+│   │   ├── qualify-lead-demo/  → /qualify-lead-demo (intentionally weak — shows the improve loop)
+│   │   │   ├── evals/          → test cases
+│   │   │   └── versions/       → SKILL.md before/after + eval report (65%→100%)
 │   │   ├── research-agent/     → /research-agent <topic>
+│   │   │   └── evals/
 │   │   ├── generate-content/   → /generate-content "<brief>"
-│   │   └── starter-agent/      → template to copy and modify
+│   │   │   └── evals/
+│   │   └── starter-agent/      → blank template to copy and modify
 │   └── commands/               ← Meta-commands
 │       ├── new-skill.md        → /new-skill (guided wizard)
-│       ├── eval-skill.md       → /eval-skill <name> (grades outputs)
-│       ├── improve-skill.md    → /improve-skill <name> (edits SKILL.md)
-│       └── export-to-sdk.md    → /export-to-sdk (generates Python)
+│       ├── eval-skill.md       → /eval-skill <name> (grades outputs, writes report)
+│       ├── improve-skill.md    → /improve-skill <name> (edits SKILL.md to fix failures)
+│       └── export-to-sdk.md    → /export-to-sdk (generates production Python)
 │
 ├── examples/
 │   ├── 01-research-agent/      ← Research & Synthesize pattern
+│   │   └── sdk/agent.py        → standalone Python script
 │   ├── 02-lead-qualifier/      ← Score & Classify pattern
+│   │   ├── icp-example.md      → sample ICP definition
+│   │   └── sdk/agent.py        → batch-capable Python script
 │   ├── 03-content-generator/   ← Generate & Iterate pattern
+│   │   ├── brand-voice-example.md
+│   │   └── sdk/agent.py
 │   └── 04-evals-and-improvement/ ← Eval loop + automated improvement
+│       ├── test-cases-example.md → template for writing test cases
 │       └── sdk/
-│           ├── eval_runner.py  → Programmatic eval runner
-│           └── improve.py      → Automated improvement loop
+│           ├── eval_runner.py  → programmatic eval runner
+│           └── improve.py      → automated improvement loop (--save-versions flag)
 │
-├── docs/
-│   ├── founder-use-cases.md    ← 5 real startup use cases with build guides
-│   ├── demo-script.md          ← 5-min reviewer walkthrough script
-│   ├── skill-patterns.md       ← Design patterns for the 3 skill shapes
-│   └── sdk-migration-guide.md  ← How to graduate to production
+├── docs/                       ← GitHub Pages site
+│   ├── index.html              → homepage
+│   ├── getting-started.html    → setup + first skill
+│   ├── examples.html           → all built-in skills with sample output
+│   ├── evals.html              → eval loop guide + 65%→100% demo
+│   ├── sdk-migration.html      → graduating to production
+│   ├── blog-step-5.html        → full tutorial (Step 5 of found-with-claude)
+│   ├── skill-patterns.md       ← design patterns and anti-patterns
+│   ├── sdk-migration-guide.md  ← SDK patterns reference
+│   ├── founder-use-cases.md    ← 5 startup use cases with build guides
+│   └── demo-script.md          ← 5-min live demo script
 │
 └── CLAUDE.md                   ← Claude's instructions when working in this repo
 ```
