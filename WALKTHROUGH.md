@@ -1,12 +1,14 @@
 # Build a Lead Qualification Agent in 20 Minutes
 
-This walkthrough goes end-to-end: from nothing to a working agent that qualifies leads against your ICP, passes an eval suite, and runs in production via the Agent SDK.
+This walkthrough goes end-to-end: from nothing to a production agent that qualifies leads against your ICP, with an eval suite to harden it over time.
 
 **What you'll have at the end:**
 - A working lead qualifier skill (`/qualify-lead <company>`)
 - An ICP definition file you can tweak without changing any code
-- A test suite with 5 cases and a passing eval score
-- A production Python script that processes a CSV of leads overnight
+- A production Python script running your agent autonomously — your MVP
+- A test suite with 5 cases and a passing eval score to harden it
+
+**The order matters:** prototype → ship → harden. Get the MVP running first, then use evals to raise quality on the already-running agent.
 
 **Time:** ~20 minutes  
 **Prerequisites:** Claude Code installed, repo cloned, `cd prototype-with-claude && claude`
@@ -115,9 +117,82 @@ Notice how `Duolingo` and `a16z` come back Cold or Disqualified — Duolingo is 
 
 ---
 
-## Part 3 — Add test cases (5 minutes)
+## Part 3 — Ship your MVP (2 minutes)
 
-Running a skill on 3 examples isn't enough. Test cases give you a reproducible quality score.
+Your skill works. Ship it now — before you write a single test case.
+
+```
+/export-to-sdk
+```
+
+Claude looks at your `qualify-lead` skill, asks a few questions (batch mode? output format?), and generates `sdk/qualify-lead/agent.py`.
+
+The core of what gets generated:
+
+```python
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+# The same instructions from SKILL.md, now in a Python function
+PROMPT_TEMPLATE = """
+Qualify this company as a sales lead: {company}
+
+ICP Criteria:
+{icp_criteria}
+
+Steps:
+1. Research the company: search for overview, size, stage, funding, job postings.
+2. Score each ICP criterion: ✅ strong match, ⚠️ partial/unclear, ❌ mismatch, ❓ no info.
+3. Assign tier: HOT, WARM, COLD, or DISQUALIFIED.
+4. Write the qualification report to output/leads/{slug}-qualification.md.
+5. Return a JSON summary: {{"company": "...", "tier": "...", "decision": "..."}}
+"""
+
+async def qualify(company: str, icp_criteria: str) -> dict:
+    result_text = None
+    async for message in query(
+        prompt=PROMPT_TEMPLATE.format(company=company, icp_criteria=icp_criteria, slug=slugify(company)),
+        options=ClaudeAgentOptions(
+            allowed_tools=["WebSearch", "WebFetch", "Write", "Bash"],
+            permission_mode="acceptEdits",
+        ),
+    ):
+        if hasattr(message, "result"):
+            result_text = message.result
+    return parse_result(result_text)
+```
+
+> **Why ship before evals?** Real-world inputs reveal failure modes that hand-written test cases never predict. Get data from actual use first. The prompt lives in `SKILL.md` — improving it later doesn't require touching `agent.py`.
+
+---
+
+## Part 4 — Run on a batch (2 minutes)
+
+```bash
+# One-time setup: copy the example env file and add your key
+cp .env.example .env
+# Open .env and replace your-api-key-here with your key from:
+# https://platform.claude.com/settings/api-keys
+
+# Create a venv, load key, install SDK
+python3 -m venv .venv && source .venv/bin/activate
+source .env
+python3 -m pip install claude-agent-sdk
+
+# Single company
+python3 examples/02-lead-qualifier/sdk/agent.py "Retool"
+
+# Batch from CSV (needs a 'company' column)
+python3 examples/02-lead-qualifier/sdk/agent.py --batch leads.csv --output results.csv
+```
+
+The batch processor runs each lead sequentially, saves a qualification report for each, and writes a CSV summary with tier and decision for every row. Run it overnight on your CRM export.
+
+---
+
+## Part 5 — Add test cases (5 minutes)
+
+You've seen real outputs now. Use them to write meaningful test cases — criteria grounded in what the agent actually does, not what you hoped it would do.
 
 Create `.claude/skills/qualify-lead/evals/test-cases.md`:
 
@@ -180,7 +255,7 @@ Create `.claude/skills/qualify-lead/evals/test-cases.md`:
 
 ---
 
-## Part 4 — Run evals (2 minutes)
+## Part 6 — Run evals (2 minutes)
 
 ```
 /eval-skill qualify-lead
@@ -192,7 +267,7 @@ Claude runs each test case, grades the output against every criterion, finds fai
 
 ```markdown
 # Eval Report: qualify-lead
-*Run: 2026-06-12 | Score: 74% (17/23 criteria)*
+*Run: 2026-06-14 | Score: 74% (17/23 criteria)*
 
 ## Summary
 **74%** — Needs improvement (target: 85%)
@@ -220,7 +295,7 @@ Fix: Add a Step 0 to check whether the input looks like a company name. If not, 
 
 ---
 
-## Part 5 — Auto-improve (2 minutes)
+## Part 7 — Auto-improve (2 minutes)
 
 ```
 /improve-skill qualify-lead
@@ -234,80 +309,11 @@ Then re-run evals to measure:
 → 87% (20/23 criteria) — score improved 13pp
 ```
 
-Repeat until you hit your target (85%+ is a reasonable bar for production). Usually 2-3 cycles.
+Because `agent.py` reads from the same `SKILL.md` prompt template, these improvements take effect immediately in production — no code changes, no redeployment. Repeat until you hit 85%+. Usually 2-3 cycles.
 
 > **See the loop work end-to-end:** [`docs/demo-improvement-journey.md`](docs/demo-improvement-journey.md) walks through a real before/after — a deliberately-weak skill goes from 65% to 100% in one iteration, with the full SKILL.md diff and eval reports checked into the repo.
 
 > **For demos and teaching:** Run `improve.py --save-versions` to snapshot SKILL.md before/after each iteration. Default off (use git in normal work).
-
----
-
-## Part 6 — Export to production Python (2 minutes)
-
-```
-/export-to-sdk
-```
-
-Claude looks at your `qualify-lead` skill, asks a few questions (batch mode? output format?), and generates `sdk/qualify-lead/agent.py`.
-
-The core of what gets generated:
-
-```python
-import asyncio
-from claude_agent_sdk import query, ClaudeAgentOptions
-
-# The same instructions from SKILL.md, now in a Python function
-PROMPT_TEMPLATE = """
-Qualify this company as a sales lead: {company}
-
-ICP Criteria:
-{icp_criteria}
-
-Steps:
-1. Research the company: search for overview, size, stage, funding, job postings.
-2. Score each ICP criterion: ✅ strong match, ⚠️ partial/unclear, ❌ mismatch, ❓ no info.
-3. Assign tier: HOT, WARM, COLD, or DISQUALIFIED.
-4. Write the qualification report to output/leads/{slug}-qualification.md.
-5. Return a JSON summary: {{"company": "...", "tier": "...", "decision": "..."}}
-"""
-
-async def qualify(company: str, icp_criteria: str) -> dict:
-    result_text = None
-    async for message in query(
-        prompt=PROMPT_TEMPLATE.format(company=company, icp_criteria=icp_criteria, slug=slugify(company)),
-        options=ClaudeAgentOptions(
-            allowed_tools=["WebSearch", "WebFetch", "Write", "Bash"],
-            permission_mode="acceptEdits",
-        ),
-    ):
-        if hasattr(message, "result"):
-            result_text = message.result
-    return parse_result(result_text)
-```
-
----
-
-## Part 7 — Run on a batch
-
-```bash
-# One-time setup: copy the example env file and add your key
-cp .env.example .env
-# Open .env and replace your-api-key-here with your key from:
-# https://platform.claude.com/settings/api-keys
-
-# Create a venv, load key, install SDK
-python3 -m venv .venv && source .venv/bin/activate
-source .env
-python3 -m pip install claude-agent-sdk
-
-# Single company
-python3 examples/02-lead-qualifier/sdk/agent.py "Retool"
-
-# Batch from CSV (needs a 'company' column)
-python3 examples/02-lead-qualifier/sdk/agent.py --batch leads.csv --output results.csv
-```
-
-The batch processor runs each lead sequentially, saves a qualification report for each, and writes a CSV summary with tier and decision for every row. Run it overnight on your CRM export.
 
 ---
 

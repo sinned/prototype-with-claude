@@ -142,12 +142,20 @@ cat output/stripe-brief.md</code></pre>
         </li>
         <li>
           <div class="step-content">
+            <h3>Ship your MVP — export to production code</h3>
+            <pre><code>/export-to-sdk</code></pre>
+            <p>Claude generates <code>sdk/your-skill/agent.py</code> — working Python code that runs the same job autonomously. Ship it now. Don't wait for evals.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-content">
             <h3>Add test cases and run evals</h3>
+            <p>Once the agent is running on real inputs, write test cases grounded in what you've seen. Then measure quality:</p>
             <pre><code># Create test cases
 mkdir -p .claude/skills/your-skill/evals
-# Copy the example and fill in your test inputs + criteria
 cp examples/04-evals-and-improvement/test-cases-example.md \
    .claude/skills/your-skill/evals/test-cases.md
+# Edit the file with your actual inputs and criteria
 
 # Run evals
 /eval-skill your-skill</code></pre>
@@ -155,16 +163,9 @@ cp examples/04-evals-and-improvement/test-cases-example.md \
         </li>
         <li>
           <div class="step-content">
-            <h3>Improve until it passes</h3>
+            <h3>Improve the skill — no redeployment needed</h3>
             <pre><code>/improve-skill your-skill</code></pre>
-            <p>Claude reads the eval report and edits your SKILL.md to fix the failures. Re-run <code>/eval-skill</code> to measure the improvement.</p>
-          </div>
-        </li>
-        <li>
-          <div class="step-content">
-            <h3>Export to production code</h3>
-            <pre><code>/export-to-sdk</code></pre>
-            <p>Claude generates <code>sdk/your-skill/agent.py</code> — working Python code that runs the same job autonomously using the Agent SDK.</p>
+            <p>Claude edits <code>SKILL.md</code> to fix the failures. Because <code>agent.py</code> uses the same prompt template, the improvement takes effect immediately in production. Re-run <code>/eval-skill</code> to measure. Repeat until 85%+.</p>
           </div>
         </li>
       </ol>

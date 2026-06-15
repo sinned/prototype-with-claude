@@ -124,11 +124,11 @@
         <p style="font-size:1.05rem;color:var(--text-muted);margin-bottom:28px">
           You've done the hard thinking in <a href="https://github.com/sinned/found-with-claude" target="_blank">found-with-claude</a>:
           mapped the opportunity, talked to customers, stress-tested with synthetic panels, and defined your product strategy.
-          Step 4 ended with a product brief. Step 5 is where you build the thing.
+          Step 4 ended with a product brief. Step 5 is where you build the thing — and ship it fast.
         </p>
 
         <p>
-          But "build" doesn't mean write production code yet. It means: define exactly what your AI agent should do, prove it works on real inputs, measure the quality, and iterate until it's reliable. <em>Then</em> write the code.
+          The order here is deliberate: <strong>prototype → ship → harden.</strong> Define what the agent should do, get it running in production quickly, then use evals to raise quality on the already-running agent. Don't wait for perfection before shipping. Real inputs reveal failure modes that no test suite anticipates.
         </p>
         <p>
           This guide walks through <code>prototype-with-claude</code> end to end — from your first skill run to a production-ready Python agent. Every step is a real command you can run.
@@ -141,9 +141,9 @@
             <li><a href="#setup">Setup — 2 minutes</a></li>
             <li><a href="#first-skill">Run a built-in skill immediately</a></li>
             <li><a href="#your-skill">Write your own skill</a></li>
-            <li><a href="#test-cases">Define quality with test cases</a></li>
+            <li><a href="#ship">Ship your MVP — export to production Python</a></li>
+            <li><a href="#test-cases">Now harden it — add test cases</a></li>
             <li><a href="#eval-loop">Measure and improve</a></li>
-            <li><a href="#ship">Export to production Python</a></li>
             <li><a href="#whats-next">What comes next (Step 6)</a></li>
           </ol>
         </div>
@@ -153,29 +153,31 @@
         <h2 id="what-youre-building">What you're actually building</h2>
 
         <p>
-          The output of this step isn't an MVP. It's a <strong>validated AI workflow</strong> — an agent that reliably does one job, tested against real inputs, with a measurable quality score.
+          The output of this step is a running production agent — plus an eval harness to harden it over time.
         </p>
 
         <p>
-          That workflow is captured as a <strong>Skill</strong>: a plain-text file (<code>SKILL.md</code>) that tells Claude what to do, step by step. Claude Code reads it and runs it immediately. No deployment, no infrastructure, no wasted API calls on behavior that doesn't work yet.
-        </p>
-
-        <p>
-          Once the skill passes its eval suite, a single command wraps it in production Python using the Claude Agent SDK. You move from "it works in my terminal" to "it runs in my product" without rewriting the logic.
+          The agent is defined as a <strong>Skill</strong>: a plain-text file (<code>SKILL.md</code>) that tells Claude what to do, step by step. Claude Code runs it immediately — no deployment, no infrastructure. One command exports it to production Python. Then evals measure and improve quality on the already-running agent, with no redeployment required.
         </p>
 
         <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 28px;margin:28px 0">
-          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;text-align:center">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:12px;text-align:center">
             <div>
-              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);margin-bottom:6px">Phase 1 — Prototype</div>
-              <div style="font-weight:600;margin-bottom:4px">SKILL.md</div>
-              <div style="font-size:0.8rem;color:var(--text-muted)">Write in minutes<br>Iterate in seconds<br>No code</div>
+              <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);margin-bottom:6px">Prototype</div>
+              <div style="font-weight:600;margin-bottom:4px;font-size:0.9rem">SKILL.md</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Write in minutes<br>Iterate in seconds</div>
             </div>
-            <div style="font-size:1.8rem;color:var(--border-strong)">→</div>
+            <div style="font-size:1.5rem;color:var(--border-strong)">→</div>
             <div>
-              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--green);margin-bottom:6px">Phase 2 — Ship</div>
-              <div style="font-weight:600;margin-bottom:4px">agent.py</div>
-              <div style="font-size:0.8rem;color:var(--text-muted)">Same instructions<br>Runs autonomously<br>In your product</div>
+              <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);margin-bottom:6px">Ship MVP</div>
+              <div style="font-weight:600;margin-bottom:4px;font-size:0.9rem">agent.py</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">One command<br>Running in production</div>
+            </div>
+            <div style="font-size:1.5rem;color:var(--border-strong)">→</div>
+            <div>
+              <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--green);margin-bottom:6px">Harden</div>
+              <div style="font-weight:600;margin-bottom:4px;font-size:0.9rem">evals + improve</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Raise quality<br>No redeployment</div>
             </div>
           </div>
         </div>
@@ -389,10 +391,96 @@ Tier: {HOT|WARM|COLD|DISQUALIFIED}
 
         <hr>
 
-        <h2 id="test-cases">Define quality with test cases</h2>
+        <h2 id="ship">Ship your MVP — export to production Python</h2>
 
         <p>
-          Running a skill on 3 examples isn't enough. Test cases give you a reproducible score you can track over time.
+          Your skill works on a few examples. That's enough. Ship it now — before you write a single test case.
+        </p>
+
+        <pre><code>/export-to-sdk</code></pre>
+
+        <p>
+          Claude generates <code>sdk/your-skill/agent.py</code> with the same instructions from your <code>SKILL.md</code> — same prompt, same tools, now running autonomously:
+        </p>
+
+        <pre><code>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
+from pathlib import Path
+
+PROMPT_TEMPLATE = """
+Qualify this company as a sales lead: {company}
+
+ICP criteria:
+{icp}
+
+Steps:
+1. Search for headcount, funding, business model, and job postings
+2. Score each criterion: ✅ match / ⚠️ partial / ❌ mismatch / ❓ unknown
+3. Assign tier: HOT, WARM, COLD, or DISQUALIFIED
+4. Write report to output/leads/{slug}-qualification.md
+5. Return JSON: {{"company": "...", "tier": "...", "decision": "..."}}
+"""
+
+async def qualify(company: str) -> dict:
+    icp = Path("icp.md").read_text() if Path("icp.md").exists() else ""
+    result = None
+    async for message in query(
+        prompt=PROMPT_TEMPLATE.format(company=company, icp=icp, slug=company.lower()),
+        options=ClaudeAgentOptions(
+            allowed_tools=["WebSearch", "WebFetch", "Write"],
+            permission_mode="acceptEdits",
+        ),
+    ):
+        if hasattr(message, "result"):
+            result = message.result
+    if result is None:
+        raise RuntimeError("Agent returned no result. Check ANTHROPIC_API_KEY.")
+    return result
+
+if __name__ == "__main__":
+    import sys
+    company = sys.argv[1] if len(sys.argv) > 1 else "Retool"
+    print(asyncio.run(qualify(company)))</code></pre>
+
+        <pre><code># Single run
+python3 sdk/qualify-lead/agent.py "Retool"
+
+# Batch from CSV
+python3 sdk/qualify-lead/agent.py --batch leads.csv --output results.csv
+
+# FastAPI endpoint
+@app.post("/qualify")
+async def qualify_endpoint(req: QualifyRequest):
+    result = await qualify(req.company)
+    return {"tier": result["tier"], "decision": result["decision"]}</code></pre>
+
+        <div class="callout green">
+          <p>
+            <strong>Why ship before evals?</strong> Real-world inputs reveal failure modes that hand-written test cases never predict.
+            Get the agent running on real data first. Write your test cases from the failure patterns you actually observe.
+            And because the prompt lives in <code>SKILL.md</code>, any improvements you make later take effect in production immediately — no code changes, no redeployment.
+          </p>
+        </div>
+
+        <h3>Concept mapping: Skill → SDK</h3>
+
+        <table>
+          <thead><tr><th>In the Skill (Claude Code)</th><th>In the SDK (Python)</th></tr></thead>
+          <tbody>
+            <tr><td>SKILL.md instructions</td><td><code>PROMPT_TEMPLATE</code> string</td></tr>
+            <tr><td>Command argument (<code>/skill input</code>)</td><td>Function parameter → f-string</td></tr>
+            <tr><td>Tools listed in skill</td><td><code>allowed_tools=[...]</code></td></tr>
+            <tr><td>Writing files</td><td><code>permission_mode="acceptEdits"</code></td></tr>
+            <tr><td>Config file (icp.md)</td><td>Read at startup, inject into prompt</td></tr>
+          </tbody>
+        </table>
+
+        <hr>
+
+        <h2 id="test-cases">Now harden it — add test cases</h2>
+
+        <p>
+          You've seen real outputs now. Write test cases grounded in what the agent actually does — not what you hoped it would do.
         </p>
 
         <p>Create <code>.claude/skills/your-skill/evals/test-cases.md</code>. Each test case is an input plus a list of binary (yes/no) quality criteria:</p>
@@ -441,7 +529,7 @@ Tier: {HOT|WARM|COLD|DISQUALIFIED}
         </ul>
 
         <p>
-          Aim for 10–20 test cases total. Cover: the happy path, the expected failure (a clearly wrong input), edge cases (ambiguous inputs, missing data), and adversarial inputs (things designed to break the skill).
+          Aim for 10–20 test cases. Cover: the happy path, the expected failure (a clearly wrong input), edge cases (ambiguous inputs, missing data), and the failure patterns you've already seen in production.
         </p>
 
         <hr>
@@ -449,7 +537,7 @@ Tier: {HOT|WARM|COLD|DISQUALIFIED}
         <h2 id="eval-loop">Measure and improve</h2>
 
         <p>
-          With test cases written, run the eval:
+          Run the eval:
         </p>
 
         <pre><code>/eval-skill your-skill</code></pre>
@@ -488,7 +576,7 @@ Fix: add "if headcount is unavailable, mark it ❓ — do NOT estimate."</code><
         <pre><code>/improve-skill your-skill</code></pre>
 
         <p>
-          Claude reads the failure patterns, edits <code>SKILL.md</code> directly to fix them, and tells you what changed. Re-run <code>/eval-skill</code> to measure the improvement. Repeat until you hit 85%+ (a reasonable production bar).
+          Claude reads the failure patterns and edits <code>SKILL.md</code> directly to fix them. Because <code>agent.py</code> uses the same prompt template, the improvement takes effect in production immediately — no code changes, no redeployment. Re-run <code>/eval-skill</code> to measure. Repeat until 85%+.
         </p>
 
         <h3>See it in action: 65% → 100% in one iteration</h3>
@@ -535,92 +623,6 @@ python3 examples/04-evals-and-improvement/sdk/improve.py your-skill \
 
         <hr>
 
-        <h2 id="ship">Export to production Python</h2>
-
-        <p>
-          Once the skill passes evals, exporting to production Python is one command:
-        </p>
-
-        <pre><code>/export-to-sdk</code></pre>
-
-        <p>
-          Claude generates <code>sdk/your-skill/agent.py</code>. The generated code uses the same instructions as your <code>SKILL.md</code> — same prompt, same tools, now running autonomously via the Agent SDK:
-        </p>
-
-        <pre><code>import asyncio
-from claude_agent_sdk import query, ClaudeAgentOptions
-from pathlib import Path
-
-PROMPT_TEMPLATE = """
-Qualify this company as a sales lead: {company}
-
-ICP criteria:
-{icp}
-
-Steps:
-1. Search for headcount, funding, business model, and job postings
-2. Score each criterion: ✅ match / ⚠️ partial / ❌ mismatch / ❓ unknown
-3. Assign tier: HOT, WARM, COLD, or DISQUALIFIED
-4. Write report to output/leads/{slug}-qualification.md
-5. Return JSON: {{"company": "...", "tier": "...", "decision": "..."}}
-"""
-
-async def qualify(company: str) -> dict:
-    icp = Path("icp.md").read_text() if Path("icp.md").exists() else ""
-    result = None
-    async for message in query(
-        prompt=PROMPT_TEMPLATE.format(company=company, icp=icp, slug=company.lower()),
-        options=ClaudeAgentOptions(
-            allowed_tools=["WebSearch", "WebFetch", "Write"],
-            permission_mode="acceptEdits",
-        ),
-    ):
-        if hasattr(message, "result"):
-            result = message.result
-    if result is None:
-        raise RuntimeError("Agent returned no result. Check ANTHROPIC_API_KEY.")
-    return result
-
-if __name__ == "__main__":
-    import sys
-    company = sys.argv[1] if len(sys.argv) > 1 else "Retool"
-    print(asyncio.run(qualify(company)))</code></pre>
-
-        <p>
-          From there, plug it into your product:
-        </p>
-
-        <pre><code># Single company
-python3 sdk/qualify-lead/agent.py "Retool"
-
-# Batch from CSV (add --batch support to agent.py)
-python3 sdk/qualify-lead/agent.py --batch leads.csv --output results.csv
-
-# FastAPI endpoint — trigger it from a webhook or UI
-@app.post("/qualify")
-async def qualify_endpoint(req: QualifyRequest):
-    result = await qualify(req.company)
-    return {"tier": result["tier"], "decision": result["decision"]}</code></pre>
-
-        <div class="callout green">
-          <p><strong>The key insight:</strong> the instructions in <code>agent.py</code> are the same instructions that were in <code>SKILL.md</code>. What you tuned during prototyping is exactly what runs in production. The migration didn't change the behavior — only the runtime.</p>
-        </div>
-
-        <h3>Concept mapping: Skill → SDK</h3>
-
-        <table>
-          <thead><tr><th>In the Skill (Claude Code)</th><th>In the SDK (Python)</th></tr></thead>
-          <tbody>
-            <tr><td>SKILL.md instructions</td><td><code>PROMPT_TEMPLATE</code> string</td></tr>
-            <tr><td>Command argument (<code>/skill input</code>)</td><td>Function parameter → f-string</td></tr>
-            <tr><td>Tools listed in skill</td><td><code>allowed_tools=[...]</code></td></tr>
-            <tr><td>Writing files</td><td><code>permission_mode="acceptEdits"</code></td></tr>
-            <tr><td>Config file (icp.md)</td><td>Read at startup, inject into prompt</td></tr>
-          </tbody>
-        </table>
-
-        <hr>
-
         <h2 id="whats-next">What comes next</h2>
 
         <p>
@@ -654,14 +656,16 @@ async def qualify_endpoint(req: QualifyRequest):
 
         <p>All the commands in one place:</p>
 
-        <pre><code># Phase 1: Prototype in Claude Code
+        <pre><code># Phase 1: Prototype → Ship MVP (in Claude Code)
 # (run from inside `claude` in the repo directory)
 
 /new-skill                        # wizard: creates SKILL.md for you
-/your-skill-name your-input       # run the skill
-/eval-skill your-skill            # grade outputs, write report
-/improve-skill your-skill         # edit SKILL.md to fix failures
-/export-to-sdk                    # generate agent.py
+/your-skill-name your-input       # run the skill on examples
+/export-to-sdk                    # ship your MVP — generate agent.py
+
+# Phase 2: Harden (after your agent is running in production)
+/eval-skill your-skill            # grade real outputs, write report
+/improve-skill your-skill         # edit SKILL.md to fix failures — no redeployment
 
 # Phase 2: Run in production
 python3 -m venv .venv && source .venv/bin/activate

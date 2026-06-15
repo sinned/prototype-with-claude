@@ -11,7 +11,7 @@ No boilerplate. No wasted API calls on logic that doesn't work yet. Validate the
 
 ## See it work
 
-The built-in lead qualifier runs immediately after cloning. Here's what the loop looks like:
+The built-in lead qualifier runs immediately after cloning. Here's the full loop — prototype, ship, then harden:
 
 **Step 1 — Run the skill in Claude Code:**
 ```
@@ -42,24 +42,28 @@ Book discovery with VP Sales. Reference the SDR build-out —
 they're building outbound motion and likely evaluating sales tools.
 ```
 
-**Step 2 — Measure quality with evals:**
+**Step 2 — Ship your MVP (export to production Python):**
+```
+/export-to-sdk
+→ Generated sdk/qualify-lead/agent.py — runs the same job without a human in the loop
+```
+
+Don't wait for perfection. Get the agent running in production first. The prompt stays in `SKILL.md` — you can improve it without redeploying.
+
+**Step 3 — Measure quality with evals:**
 ```
 /eval-skill qualify-lead
 → 77% (17/22 criteria) — report in output/evals/qualify-lead-report.md
 ```
 
-**Step 3 — Auto-improve:**
+**Step 4 — Auto-improve:**
 ```
 /improve-skill qualify-lead
 → Edited SKILL.md: added explicit fallback for missing headcount data
 → Re-run /eval-skill to measure improvement
 ```
 
-**Step 4 — Export to production Python:**
-```
-/export-to-sdk
-→ Generated sdk/qualify-lead/agent.py — runs the same job without a human in the loop
-```
+Changes to `SKILL.md` automatically improve the already-running production agent — same prompt template, no redeployment.
 
 **That's the full loop.** See [`WALKTHROUGH.md`](WALKTHROUGH.md) for a complete 20-minute build-along with sample inputs, real outputs, and eval results.
 
@@ -67,12 +71,12 @@ they're building outbound motion and likely evaluating sales tools.
 
 ## Why this order matters
 
-Most founders jump straight to SDK code before they know what the agent should actually do. That's expensive to iterate on — every change requires redeployment. Skills fix that:
+Most founders either jump straight to SDK code (expensive to iterate) or over-engineer evals before they've shipped anything. This repo avoids both traps:
 
 - **Write in minutes, not hours.** A SKILL.md file takes 10 minutes to write and 30 seconds to test.
-- **Discover failure modes before they cost you.** The eval loop catches edge cases while you're still in markdown.
-- **The prompt stays editable.** Business logic lives in `SKILL.md`, not buried in Python strings.
-- **Migration is trivial.** Once the behavior is validated, `/export-to-sdk` generates the production wrapper.
+- **Ship before you perfect.** Export to the SDK as soon as the skill works on a few examples. Real-world inputs reveal failure modes that test cases never predict.
+- **The prompt stays editable.** Business logic lives in `SKILL.md`, not buried in Python strings. Fix it without touching agent.py.
+- **Evals harden what's already running.** Measure quality on your production agent, find failure patterns, improve the skill. No redeployment needed.
 - **Your team can read it.** A PM can review a SKILL.md. They can't review an agent loop.
 
 ---

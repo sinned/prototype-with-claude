@@ -31,9 +31,9 @@
   <section class="hero section-alt" style="padding:48px 0 40px;text-align:left">
     <div class="container">
       <h4>Evals &amp; Improvement</h4>
-      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-top:8px">How to know if your skill actually works</h1>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin-top:8px">Harden your agent after you ship</h1>
       <p class="hero-sub" style="text-align:left;margin-left:0;margin-top:12px">
-        Running a skill on 3 examples isn't enough. Evals give you a systematic, reproducible measure of quality — and the improvement loop fixes failures automatically.
+        You shipped your first agent. Now use evals to systematically raise quality on the already-running production agent — no redeployment, no rewrite.
       </p>
     </div>
   </section>
@@ -42,17 +42,21 @@
     <div class="container" style="max-width:820px">
 
       <!-- The problem -->
-      <h2 style="margin-bottom:16px">The problem with "it looks okay"</h2>
+      <h2 style="margin-bottom:16px">Evals are not a pre-ship gate</h2>
       <p>
-        You run your skill. The output looks good. You ship it. Then in production, 30% of inputs produce garbage output.
+        Most AI quality frameworks treat evals as something you do before shipping. That's backwards.
+        Real-world inputs reveal failure modes that hand-written test cases never predict.
+        Ship first. Get data. Then measure.
       </p>
       <p>
-        The problem: LLM outputs vary. What works on your hand-picked test inputs might fail on real-world inputs.
-        Traditional unit tests don't work ("assert output == expected") because outputs are never identical.
+        The problem evals solve: LLM outputs vary. What works on your hand-picked examples may fail
+        on real inputs at scale. Traditional unit tests don't work
+        ("assert output == expected") because outputs are never identical.
       </p>
       <p>
         The solution: <strong>LLM-as-judge.</strong> Write binary quality criteria (yes/no, not "sort of").
-        Have Claude grade outputs against them. Find patterns in what fails. Fix the SKILL.md. Repeat.
+        Have Claude grade your production agent's outputs against them. Find patterns in what fails.
+        Fix the SKILL.md. The improvement takes effect immediately — same prompt template, no redeployment.
       </p>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:44px 0">

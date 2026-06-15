@@ -3,8 +3,8 @@
 This repo is a starter kit for startup founders who want to build AI-enabled products fast. The workflow is:
 
 1. **Prototype** — Build Claude Skills to define what your AI agent should do. Claude Code IS the agent runtime. Skills are plain-text job descriptions that Claude Code executes interactively.
-2. **Validate** — Iterate on the Skill until Claude reliably does the job.
-3. **Ship** — Migrate to the Claude Agent SDK for production: automatable, scalable, embeddable in any app.
+2. **Ship** — Migrate to the Claude Agent SDK immediately. Get your first agent running in production fast — don't wait for perfection.
+3. **Harden** — Add evals and run the improvement loop to systematically raise quality on the already-running agent. Evals are a continuous improvement tool, not a pre-ship gate.
 
 ## Your role in this repo
 
