@@ -9,8 +9,10 @@ import asyncio
 import argparse
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 from claude_agent_sdk import query, ClaudeAgentOptions
 
+load_dotenv()
 
 PROMPT_TEMPLATE = """
 Research {subject} and produce a structured intelligence brief.

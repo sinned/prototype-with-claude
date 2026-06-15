@@ -10,7 +10,10 @@ import argparse
 import csv
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 from claude_agent_sdk import query, ClaudeAgentOptions
+
+load_dotenv()
 
 
 DEFAULT_BRAND_VOICE = """

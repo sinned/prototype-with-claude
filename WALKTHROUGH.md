@@ -174,10 +174,9 @@ cp .env.example .env
 # Open .env and replace your-api-key-here with your key from:
 # https://platform.claude.com/settings/api-keys
 
-# Create a venv, load key, install SDK
+# Create a venv and install SDK (agent.py reads .env automatically)
 python3 -m venv .venv && source .venv/bin/activate
-source .env
-python3 -m pip install claude-agent-sdk
+python3 -m pip install claude-agent-sdk python-dotenv
 
 # Single company
 python3 examples/02-lead-qualifier/sdk/agent.py "Retool"

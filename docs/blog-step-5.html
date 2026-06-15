@@ -609,8 +609,8 @@ python3 examples/04-evals-and-improvement/sdk/eval_runner.py qualify-lead-demo
 
         <pre><code># Set up Python environment (one time)
 python3 -m venv .venv && source .venv/bin/activate
-python3 -m pip install claude-agent-sdk
-source .env   # loads ANTHROPIC_API_KEY
+python3 -m pip install claude-agent-sdk python-dotenv
+# ANTHROPIC_API_KEY is read from .env automatically
 
 # Run: eval → improve → eval → until target score
 python3 examples/04-evals-and-improvement/sdk/improve.py your-skill \
@@ -669,8 +669,8 @@ python3 examples/04-evals-and-improvement/sdk/improve.py your-skill \
 
 # Phase 2: Run in production
 python3 -m venv .venv && source .venv/bin/activate
-python3 -m pip install claude-agent-sdk
-source .env
+python3 -m pip install claude-agent-sdk python-dotenv
+# ANTHROPIC_API_KEY is read from .env automatically
 
 # Single run
 python3 sdk/your-skill/agent.py "your input"

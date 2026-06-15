@@ -60,12 +60,10 @@
 # Edit .env: replace your-api-key-here with your key from platform.claude.com/settings/api-keys
 
 # Create a venv, activate it, and install the SDK
+# (agent.py reads ANTHROPIC_API_KEY from .env automatically)
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install claude-agent-sdk
-
-# Load the API key into your environment
-source .env</code></pre>
+python3 -m pip install claude-agent-sdk python-dotenv</code></pre>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:48px 0">
 

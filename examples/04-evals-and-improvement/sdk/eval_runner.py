@@ -14,7 +14,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
+from dotenv import load_dotenv
 from claude_agent_sdk import query, ClaudeAgentOptions
+
+load_dotenv()
 
 
 @dataclass

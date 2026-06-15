@@ -12,7 +12,10 @@ import hashlib
 import sys
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 from claude_agent_sdk import query, ClaudeAgentOptions
+
+load_dotenv()
 
 from eval_runner import run_evals, EvalReport
 

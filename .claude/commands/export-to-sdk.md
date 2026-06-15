@@ -28,8 +28,11 @@ The founder has been prototyping in Claude Code using Skills. Now they want to t
 
 ```python
 import asyncio
-import os
+import sys
+from dotenv import load_dotenv
 from claude_agent_sdk import query, ClaudeAgentOptions
+
+load_dotenv()
 
 async def run_<skill_name>(input_data: str) -> str:
     """<One-line description from the skill>"""
@@ -47,13 +50,14 @@ Input: {input_data}
     ):
         if hasattr(message, "result"):
             result = message.result
+    if result is None:
+        print("Error: agent returned no result. Check ANTHROPIC_API_KEY and network.", file=sys.stderr)
+        sys.exit(1)
     return result
 
 if __name__ == "__main__":
-    import sys
     input_data = sys.argv[1] if len(sys.argv) > 1 else input("Enter input: ")
-    result = asyncio.run(run_<skill_name>(input_data))
-    print(result)
+    print(asyncio.run(run_<skill_name>(input_data)))
 ```
 
 ### Key things to adapt from the skill
@@ -103,7 +107,7 @@ async def run_with_session(inputs: list[str]) -> list[str]:
 Generate these files in `sdk/<skill-name>/`:
 
 1. `agent.py` — The main agent script
-2. `requirements.txt` — Python dependencies (always includes `claude-agent-sdk`)
+2. `requirements.txt` — Python dependencies (always includes `claude-agent-sdk` and `python-dotenv`)
 3. `README.md` — How to run it, what it does, example inputs/outputs
 
 ## After generating
@@ -113,7 +117,7 @@ Show the founder how to run it:
 cd sdk/<skill-name>
 python3 -m venv .venv && source .venv/bin/activate
 python3 -m pip install -r requirements.txt
-source ../../.env   # or: export ANTHROPIC_API_KEY=your-key
+# Set ANTHROPIC_API_KEY in .env (repo root), or export it directly
 python3 agent.py "your input here"
 ```
 
