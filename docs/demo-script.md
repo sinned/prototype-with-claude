@@ -2,7 +2,7 @@
 
 A structured walkthrough for showing `prototype-with-claude` to a reviewer, investor, or founder. Designed to make the core idea viscerally clear without requiring them to run anything.
 
-**Goal:** Leave them understanding: (1) what the prototype loop looks like, (2) why Skills are the right abstraction, (3) how the graduation to production works.
+**Goal:** Leave them understanding: (1) what the prototype loop looks like, (2) how fast you get to a running production agent, (3) how evals harden what's already shipping.
 
 **Setup:** Have Claude Code open in this repo, terminal visible, `icp.md` already created.
 
@@ -13,7 +13,7 @@ A structured walkthrough for showing `prototype-with-claude` to a reviewer, inve
 **Say:**
 > "The hardest part of building an AI product isn't the code. It's figuring out what the agent should actually do. Most founders jump straight to writing SDK code before they've validated the core behavior. They end up iterating on Python strings instead of the actual logic.
 >
-> This repo flips that. You define the behavior in plain text — a Skill — and Claude Code runs it immediately. You find out in 30 seconds if the job is doable. Then when it's working reliably, you export it to production code with one command."
+> This repo flips that. You define the behavior in plain text — a Skill — and Claude Code runs it immediately. You find out in 30 seconds if the job is doable. Then when it's working on a few examples, you export it to production code with one command. Ship first. Harden after."
 
 **Show:** The repo root in Claude Code. Point to `.claude/skills/qualify-lead/SKILL.md`.
 
@@ -49,39 +49,10 @@ Open `output/leads/retool-qualification.md`. Point out:
 
 ---
 
-## Minute 3: Show the eval loop
+## Minute 3: Ship the MVP
 
 **Say:**
-> "But 'it worked once' isn't enough. Let me show you how we measure whether this actually works reliably."
-
-Open `.claude/skills/qualify-lead/evals/test-cases.md`.
-
-> "These are binary quality criteria — yes or no. Does the output have a source URL? Is the tier correct for a consumer company? The criteria are what 'good' means for this agent."
-
-**Type:**
-```
-/eval-skill qualify-lead
-```
-
-**While running:**
-> "Claude is running the skill on each test case, then grading its own outputs against the criteria. This is LLM-as-judge — the same model that produced the output is evaluating it. Works because the criteria are specific enough that it's not subjective."
-
-**When it finishes, show the report:**
-> "77% — needs improvement. Look at the failure patterns. It's not random — there are two specific things wrong: missing source citations on low-info companies, and no handling for non-company inputs. These map directly to things we can fix in the SKILL.md."
-
-**Type:**
-```
-/improve-skill qualify-lead
-```
-
-> "It reads the report, edits the SKILL.md to fix those specific issues, and I can re-run the eval to see if the score went up. This is the loop. Usually takes 2-3 cycles to get above 85%."
-
----
-
-## Minute 4: Show the graduation to production
-
-**Say:**
-> "Once the behavior is validated — it passes evals consistently — you graduate to production with one command."
+> "It worked on Retool. Run it on two more — Notion, Duolingo — and you'll see it handles edge cases. That's enough. Ship it now, before you write a single test case."
 
 **Type:**
 ```
@@ -90,16 +61,42 @@ Open `.claude/skills/qualify-lead/evals/test-cases.md`.
 
 > "It generates a Python file. Let me show you what that looks like."
 
-Open `examples/02-lead-qualifier/sdk/agent.py`. Point to the `PROMPT_TEMPLATE`:
+Open `examples/02-lead-qualifier/sdk/agent.py`. Point to `PROMPT_TEMPLATE`:
 
-> "See this? It's the same instructions from the SKILL.md, now in a Python string. The agent behavior is identical. But now it runs without a human in the loop."
+> "See this? It's the same instructions from the SKILL.md, now in a Python string. The agent behavior is identical — but now it runs without a human in the loop."
 
-Scroll to the `qualify_batch` function:
+Scroll to `qualify_batch`:
 
-> "This runs on a list. Import your CRM export as a CSV, point this at it, come back in the morning with every lead scored. Or wire it to a FastAPI endpoint and qualify leads in real-time as they come in."
+> "This runs on a list. Import your CRM export as a CSV, point this at it, come back in the morning with every lead scored. Or wire it to a FastAPI endpoint and qualify leads in real time as they come in."
 
 **Key point to make:**
-> "The mental model is: SKILL.md is the source of truth. The Python file is just a runtime wrapper. If you need to change the behavior, you change the skill, run evals, and update the Python. The code doesn't own the logic."
+> "We just went from a plain-text job description to a production Python agent in three minutes. The prompt lives in SKILL.md — improve it later without touching the Python."
+
+---
+
+## Minute 4: Harden it with evals (after it's running)
+
+**Say:**
+> "Now it's shipping. Real inputs start revealing failure modes you'd never predict from test cases. That's when evals become useful — not as a gate before shipping, but as a way to measure and improve what's already running."
+
+Open `.claude/skills/qualify-lead-demo/SKILL.md` — the intentionally weak version:
+
+> "This is a deliberately weak version of the same skill. Watch what happens when you run evals on it."
+
+Open `.claude/skills/qualify-lead-demo/versions/eval-report-v1-100pct.md`:
+
+> "65% on the first run. Two specific failure patterns — missing citations on low-info companies, no handling for non-company inputs. Look what one improve cycle did."
+
+Show `versions/SKILL-v0-initial.md` vs `versions/SKILL-v1-after-improve.md` side by side:
+
+> "That diff is what `/improve-skill` wrote. It read the eval report and fixed the two failure patterns directly in the SKILL.md. Re-ran evals: 100%."
+
+**Type:**
+```
+/improve-skill qualify-lead
+```
+
+> "Same loop on the production skill. Read report → edit SKILL.md → re-run evals. Because the agent.py just reads from SKILL.md, this takes effect immediately — no redeployment."
 
 ---
 
@@ -110,13 +107,13 @@ Scroll to the `qualify_batch` function:
 
 > `/new-skill` is a guided wizard that asks you the right questions and writes the SKILL.md for you. Most people have a working first version in under 10 minutes.
 
-> The path is always the same: define the job → run it → write test cases → eval → improve → export. The tools handle the iteration. You just write the job descriptions and criteria."
+> The order is always: define the job → run it → ship it → measure → improve. You're not waiting for perfection before shipping. You're using real production inputs to find the failures that matter."
 
 **Point to the repo map in README.md:**
 > "Everything is here. The examples show the full pattern including SDK migrations. The docs cover the patterns, anti-patterns, and how to wire agents into products."
 
 **Close with:**
-> "The thing I find compelling about this approach is that it separates 'figuring out what the AI should do' from 'writing the code to run it.' Those are different problems on different timescales. Skills let you solve the first problem fast, cheaply, with no infrastructure. The Agent SDK solves the second problem once you know what you're building."
+> "The thing I find compelling about this approach is that it separates 'figuring out what the AI should do' from 'writing the code to run it' — and both of those from 'making it reliable.' Three different problems on three different timescales. You don't have to solve all three before you ship."
 
 ---
 
@@ -126,7 +123,7 @@ Scroll to the `qualify_batch` function:
 > "Phase 1 — prototyping in Claude Code — uses your Claude subscription, no per-call billing. Phase 2 — running the Agent SDK in production — goes through the API. A lead qualifier running on 100 leads costs roughly $1-3 depending on how much research each one requires."
 
 **"What if Claude is wrong about a company?"**
-> "The eval loop exists specifically for this. You write a test case for the tricky case — 'what if the company is B2C but has a B2B product?' — and add it as a criterion. The skill gets better at handling those cases through the improve loop. It's the same process as fixing any software bug, just in markdown."
+> "That's exactly what evals catch once you're running in production. You write a test case for the tricky input, add it as a criterion, and the improve loop fixes it in SKILL.md. Same process as fixing a software bug, just in markdown."
 
 **"Can this handle [specific domain]?"**
 > "The pattern works for any job where: (1) Claude has the information it needs via web search or files you provide, (2) the output has a defined structure, and (3) you can write yes/no quality criteria. Most research, scoring, and generation tasks fit."
@@ -138,7 +135,7 @@ Scroll to the `qualify_batch` function:
 
 ## What not to show
 
-- Don't demo with a company Claude might not know well — it risks a bad output during the live demo. Use Retool, Notion, or Linear.
+- Don't demo with a company Claude might not know well — risks a bad output during the live demo. Use Retool, Notion, or Linear.
 - Don't show the raw Python SDK code first — start with the skill, then show the SDK as the migration path.
-- Don't run `/eval-skill` without test cases in place — you'll get an error.
+- Don't lead with evals — they're minute 4, not minute 2. The hook is speed to working agent, not test coverage.
 - Don't claim the improvement loop is fully automatic — it edits SKILL.md but you review the changes.
